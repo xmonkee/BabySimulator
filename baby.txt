@@ -1,18 +1,29 @@
 ## Resources:
-1. [M] Money
-2. [E] Energy
-3. [F] Baby Food
-4. [D] Diapers
-5. [DC] DiaperPaleCapacity
-7. [BR] BabyRestfulness
-6. [BS] BabySatiation
-7. [BC] BabyCleanliness
+- [M] Money
+- [E] Energy
+- [Q] Quietude
+- [F] Baby Food
+- [D] Diapers
+- [P] DiaperPaleCapacity
+- [R] BabyRestfulness
+- [S] BabySatiation
+- [C] BabyCleanliness
+- [H] BabyHappiness
 
 
 ## Actions:
-1. Work [+M -E]
-2. BuyDiapers [+D -E]
-3. BuyFood [+F -E]
-4. Sleep [+E]
-5. BabySleep [
+- Work [+M -E]
+- Poop [-C]
+- Change [+C -D -P -E]
+- Garbage [+P]
+- BuyDiapers [+D -M]
+- Eat [-F +E]
+- Feed [-F +S]
+- Bathe [+C -E]
+- BuyFood [+F -M]
+- Sleep [+Q]
+- BabySleep [+R -E]
+- Play [+H -E +Q]
+- Time [-S -E -H -C]
+
 
