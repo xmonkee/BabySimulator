@@ -6,32 +6,66 @@
 -- version: 0.1
 -- script:  lua
 
-t=0
-x=96
-y=24
+function initConstants()
+    t=0
+    labels = {
+        E="Energy", C="Calm", B="Boredom",
+        DF="DiaperFullness", H="Happiness"
+    }
+    renderBabyFields = {"E", "C", "H"}
+    renderParentFields = {"E", "C", "H"}
+    colors={label=5}
+end
+
+function initState()
+    baby = {E=100, C=100, B=0, DF=0}
+    parent = {E=100, C=100, H=100}
+
+    function baby.H(self)
+        return self.DF + self.B
+    end
+end
+
+
+function init()
+    initConstants()
+    initState()
+end
+
+init()
+
+------------------------------------------------------------------
+
+function renderBabyState()
+    for i,field in pairs(renderBabyFields) do
+        local x=(9-string.len(labels[field]))*4
+        local y = i*8
+        x = print(labels[field],x,y,colors.label, true, 1, true)
+        for j=1,baby[field]//10 do
+            spr(0,x,y,0)
+            x=x+4
+        end
+    end
+end
+
+function renderParentState()
+end
+
+function render()
+    renderBabyState()
+    renderParentState()
+end
+
+------------------------------------------------------------------
 
 function TIC()
-
-	if btn(0) then y=y-1 end
-	if btn(1) then y=y+1 end
-	if btn(2) then x=x-1 end
-	if btn(3) then x=x+1 end
-
-	cls(13)
-	spr(1+t%60//30*2,x,y,14,3,0,0,2,2)
-	print("HELLO WORLD!",84,84)
+    cls(0)
 	t=t+1
+    render()
 end
 
 -- <TILES>
--- 001:eccccccccc888888caaaaaaaca888888cacccccccacc0ccccacc0ccccacc0ccc
--- 002:ccccceee8888cceeaaaa0cee888a0ceeccca0ccc0cca0c0c0cca0c0c0cca0c0c
--- 003:eccccccccc888888caaaaaaaca888888cacccccccacccccccacc0ccccacc0ccc
--- 004:ccccceee8888cceeaaaa0cee888a0ceeccca0cccccca0c0c0cca0c0c0cca0c0c
--- 017:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 018:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
--- 019:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 020:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
+-- 000:6666000065560000655600006556000065560000655600006556000066660000
 -- </TILES>
 
 -- <WAVES>

@@ -1,29 +1,60 @@
 ## Resources:
 - [M] Money
-- [E] Energy
-- [Q] Quietude
 - [F] Baby Food
 - [D] Diapers
-- [P] DiaperPaleCapacity
-- [R] BabyRestfulness
-- [S] BabySatiation
-- [C] BabyCleanliness
-- [H] BabyHappiness
+- [T] Trash
 
+## Parent
+- [P.E] Parent Energy
+- [P.C] Parent Calm
+- [P.H] Parent Happiness
+
+## Baby
+- [B.E] Baby Energy
+- [B.C] Baby Calm
+- [B.B] Baby Boredom
+- [B.D] Baby Diaper fullness
+- [B.H] Baby Happiness = f(B.B, B.D)
+
+## Booleans
+- GarbageTruckIsHere
+
+## Rate
+- P.E -= 0.3
+- P.H -= 0.1
+- P.C -= 0.1
+- B.E -= 0.5
+- B.H -= 0.5
+- B.C -= 0.2
+
+## Events
+- Poop (wakes up baby)
+- GarbageTruckCome
+- GarbageTruckGo
+- BabyWakeUp
+
+## Locations
+- Shops - BuyDiapers, BuyFood, Socialize
+- Kitchen - MakeFood
+- Storage - GetDiaper
+- Baby - ChangeDiaper, FeedBaby
+- Bed - Sleep
+- Crib - SleepBaby
+- Bath - BatheBaby
+- Trash - ThrowDiaper
 
 ## Actions:
-- Work [+M -E]
-- Poop [-C]
-- Change [+C -D -P -E]
-- Garbage [+P]
+- Work [+M -P.E]
 - BuyDiapers [+D -M]
-- Eat [-F +E]
-- Feed [-F +S]
-- Bathe [+C -E]
 - BuyFood [+F -M]
-- Sleep [+Q]
-- BabySleep [+R -E]
-- Play [+H -E +Q]
-- Time [-S -E -H -C]
+- PutOutGarbage [-T]
 
+- ChangeDiaper [+T -B.D]
+- FeedBaby [-F +B.E]
+- BatheBaby [+C -E]
+- SleepBaby [+R -E]
+- PlayBaby [+H -E +Q]
 
+- Eat [-F +P.E]
+- Sleep [+P.C]
+- Socialize [+P.H]
