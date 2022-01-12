@@ -9,21 +9,22 @@
 function initConstants()
     t=0
     labels = {
-        E="Energy", C="Calm", B="Boredom",
-        DF="DiaperFullness", H="Happiness"
+        E="Ener", C="Calm", B="Boredom",
+        DF="DiaperFullness", H="Happ"
     }
-    renderBabyFields = {"E", "C", "H"}
-    renderParentFields = {"E", "C", "H"}
-    colors={label=5}
+    meterFields = {"E", "C", "H"}
+    colors={label=12, meter=5, background=0}
 end
 
 function initState()
-    baby = {E=100, C=100, B=0, DF=0}
-    parent = {E=100, C=100, H=100}
-
-    function baby.H(self)
-        return self.DF + self.B
-    end
+    baby = {E=100, C=100, B=0, DF=100}
+    setmetatable(baby, {
+        __index=function(table,key)
+            if key=="H" then return table.B + table.DF end
+            return nil
+        end
+    })
+    parent = {E=50, C=100, H=100}
 end
 
 
@@ -36,36 +37,44 @@ init()
 
 ------------------------------------------------------------------
 
-function renderBabyState()
-    for i,field in pairs(renderBabyFields) do
-        local x=(9-string.len(labels[field]))*4
-        local y = i*8
-        x = print(labels[field],x,y,colors.label, true, 1, true)
-        for j=1,baby[field]//10 do
-            spr(0,x,y,0)
-            x=x+4
-        end
+function drawMeter(person, label, startx, starty)
+    print(label, startx, starty, colors.label)
+    for i,field in pairs(meterFields) do
+        local x=startx
+        local y = starty + (i)*8
+        x = x + print(labels[field],x,y,colors.label, true, 1, true) + 1
+        rectb(x,y,20,7,colors.meter)
+        rect(x,y,person[field]//20*4,7, colors.meter)
     end
 end
 
-function renderParentState()
+function drawMeters()
+    drawMeter(baby, "--Baby--", 0, 0)
+    drawMeter(parent, "--Papa--", 0, 40)
 end
 
-function render()
-    renderBabyState()
-    renderParentState()
+function drawClock()
+    print("Time: "..math.floor(hour)..":"..math.floor(minute), 90,0, colors.label)
+    line(120,0,120,100,5)
+end
+
+function draw()
+    drawMeters()
+    drawClock()
 end
 
 ------------------------------------------------------------------
 
 function TIC()
-    cls(0)
+    cls(colors.background)
 	t=t+1
-    render()
+    minute=(t/60) % 60
+    hour=(t/(60*60)) % 24
+    draw()
 end
 
 -- <TILES>
--- 000:6666000065560000655600006556000065560000655600006556000066660000
+-- 000:6666000065560000655600006556000065560000655600006666000000000000
 -- </TILES>
 
 -- <WAVES>
