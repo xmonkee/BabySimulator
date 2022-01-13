@@ -17,10 +17,10 @@ function initConstants()
 end
 
 function initState()
-    baby = {E=100, C=100, B=0, DF=100}
+    baby = {E=100, C=100, B=0, DF=50}
     setmetatable(baby, {
         __index=function(table,key)
-            if key=="H" then return table.B + table.DF end
+            if key=="H" then return 100 - math.min(100, table.B + table.DF) end
             return nil
         end
     })
@@ -43,22 +43,24 @@ function drawMeter(person, label, startx, starty)
         local x=startx
         local y = starty + (i)*8
         x = x + print(labels[field],x,y,colors.label, true, 1, true) + 1
-        rectb(x,y,20,7,colors.meter)
-        rect(x,y,person[field]//20*4,7, colors.meter)
+        rectb(x,y,24,7,colors.label)
+        rect(x+2,y+2,person[field]/20*4,3, colors.meter)
     end
 end
 
 function drawMeters()
     drawMeter(baby, "--Baby--", 0, 0)
-    drawMeter(parent, "--Papa--", 0, 40)
+    drawMeter(parent, "--Papa--", 0, 35)
 end
 
 function drawClock()
-    print("Time: "..math.floor(hour)..":"..math.floor(minute), 90,0, colors.label)
-    line(120,0,120,100,5)
+    spr(258,100,0,0)
+    print(string.format("%.2d:%.2d", math.floor(hour), math.floor(minute)), 110,1, colors.label, true, 1, true)
 end
 
 function draw()
+    rect(119,0,1,136,5)
+    rect(0,67,240,1,5)
     drawMeters()
     drawClock()
 end
@@ -73,9 +75,12 @@ function TIC()
     draw()
 end
 
--- <TILES>
--- 000:6666000065560000655600006556000065560000655600006666000000000000
--- </TILES>
+-- <SPRITES>
+-- 000:00cdedc00d00c00dc000c000d000c000e0ccc000d0000200c00000200d00000d
+-- 001:0000000000000000c0000000d0000000e0000000d0000000c000000000000000
+-- 002:00cde0000c000d00c00c00e0c0cc00e0c00000e00c000d0000cde00000000000
+-- 016:00cdedc000000000000000000000000000000000000000000000000000000000
+-- </SPRITES>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
