@@ -13,20 +13,77 @@ function initConstants()
         DF="DiaperFullness", H="Happ"
     }
     meterFields = {"E", "C", "H"}
-    colors={label=12, meter=5, background=0}
+    colors={
+        label=12,
+        meter=5,
+        background=0,
+        menuItem=10,
+        selectedMenuItem=9,
+        menuItemText=12,
+    }
+    ticsPerSecond=.1 --actually it's 60, game is sped up by 60x
+    ticsPerMinute=60*ticsPerSecond
+    ticsPerHour=60*ticsPerMinute
 end
 
 function initState()
-    baby = {E=100, C=100, B=0, DF=50}
+    s = {}
+
+    local baby = {E=100, C=100, B=0, DF=50}
     setmetatable(baby, {
         __index=function(table,key)
-            if key=="H" then return 100 - math.min(100, table.B + table.DF) end
+            if key=="H" then
+                return 100 - math.min(100, table.B + table.DF)
+            end
             return nil
         end
     })
-    parent = {E=50, C=100, H=100}
-end
 
+    local parent = {E=100, C=100, H=100}
+
+    function adjMetric(self,metric,val)
+        self[metric] = math.max(0,
+            math.min(100,
+                self[metric]+val))
+    end
+
+    baby.adj=adjMetric
+    parent.adj=adjMetric
+
+    local menu = {
+        shown=false,
+        items={
+            {"work", "Work"},
+            {"buyd", "Buy diapers"},
+            {"buyf", "Buy food"}, {"garb", "Put out garbage"},
+            {"cdiap", "Change diaper"},
+            {"feed", "Feed baby"},
+            {"sleepb", "Sleep baby"},
+            {"play", "Play with baby"},
+            {"eat", "Eat a meal"},
+            {"sleep", "Take a nap"},
+            {"soc", "Socialize"}},
+        selected=1,
+        inc=function(self)
+            self.selected = math.min(#self.items, self.selected+1)
+        end,
+        dec=function(self)
+            self.selected = math.max(1, self.selected-1)
+        end
+    }
+
+    local resources = {
+        money=100,
+        food=100,
+        diapers=10,
+        trash=0
+    }
+
+    s.b = baby
+    s.p = parent
+    s.m = menu
+    s.r = resources
+end
 
 function init()
     initConstants()
@@ -35,7 +92,59 @@ end
 
 init()
 
-------------------------------------------------------------------
+-----------------------------------------------------------------
+
+actions = {
+    work=function()
+        s.r.money = s.r.money + 20
+        s.p:adj("E",-10)
+    end
+}
+
+function updateTimeBasedStats()
+    s.p.E = math.max(0, s.p.E - 30 / ticsPerHour)
+    s.p.H = math.max(0, s.p.E - 10 / ticsPerHour)
+    s.p.C = math.max(0, s.p.E - 10 / ticsPerHour)
+    s.b.E = math.max(0, s.b.E - 50 / ticsPerHour)
+    s.b.H = math.max(0, s.b.E - 50 / ticsPerHour)
+    s.b.C = math.max(0, s.b.E - 20 / ticsPerHour)
+end
+
+function readKeys()
+    if s.m.shown then
+        if btnp(0,60,5) then s.m:dec() end
+        if btnp(1,60,5) then s.m:inc() end
+        if btnp(4,60,5) then
+            actions[s.m.items[s.m.selected][1]]()
+            s.m.shown=false
+        end
+    end
+    if btnp(4,60,5) and not s.m.shown then s.m.shown=true end
+    if btnp(5,60,5) and s.m.shown then s.m.shown=false end
+end
+
+function update()
+    updateTimeBasedStats()
+    readKeys()
+end
+
+---------------------------------------------------------------
+
+function drawMenu()
+    if not s.m.shown then return end
+    function drawItem(item,x,y,selected)
+        local color = colors.menuItem
+        if selected then color = colors.selectedMenuItem end
+       rect(x,y,61,10,color)
+       print(item[2],x+1,y+1,colors.menuItemText,true,1,true)
+    end
+    local x=130
+    local ys=10
+    for i,item in pairs(s.m.items) do
+        local y=ys+i*8
+        drawItem(item, x, y,s.m.selected==i)
+    end
+end
 
 function drawMeter(person, label, startx, starty)
     print(label, startx, starty, colors.label)
@@ -48,21 +157,35 @@ function drawMeter(person, label, startx, starty)
     end
 end
 
+function drawResources()
+    local x=200
+    local y=0
+    for k,v in pairs(s.r) do
+        print(k.."="..v,x,y,10,true,1,true)
+        y=y+8
+    end
+end
+
 function drawMeters()
-    drawMeter(baby, "--Baby--", 0, 0)
-    drawMeter(parent, "--Papa--", 0, 35)
+    drawMeter(s.b, "Baby", 0, 0)
+    drawMeter(s.p, "Papa", 0, 35)
 end
 
 function drawClock()
     spr(258,100,0,0)
-    print(string.format("%.2d:%.2d", math.floor(hour), math.floor(minute)), 110,1, colors.label, true, 1, true)
+    print(string.format("%.2d:%.2d",
+        math.floor(hour),
+        math.floor(minute)),
+    110,1, colors.label, true, 1, true)
 end
 
 function draw()
     rect(119,0,1,136,5)
     rect(0,67,240,1,5)
     drawMeters()
+    drawResources()
     drawClock()
+    drawMenu()
 end
 
 ------------------------------------------------------------------
@@ -70,10 +193,13 @@ end
 function TIC()
     cls(colors.background)
 	t=t+1
-    minute=(t/60) % 60
-    hour=(t/(60*60)) % 24
+    minute=(t/ticsPerMinute) % 60
+    hourt=t/ticsPerHour
+    hour=hourt % 24
+    update()
     draw()
 end
+
 
 -- <SPRITES>
 -- 000:00cdedc00d00c00dc000c000d000c000e0ccc000d0000200c00000200d00000d
