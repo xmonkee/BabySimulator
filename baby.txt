@@ -49,12 +49,13 @@
 - BuyFood [+F -M]
 - PutOutGarbage [-T]
 
-- ChangeDiaper [+T -B.D]
+- ChangeDiaper [-D +T -B.D]
 - FeedBaby [-F +B.E]
 - BatheBaby [+C -E]
 - SleepBaby [+R -E]
 - PlayBaby [+H -E +Q]
 
+- Cook [-F -P.E +T]
 - Eat [-F +P.E]
 - Sleep [+P.C]
 - Socialize [+P.H]
