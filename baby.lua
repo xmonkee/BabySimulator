@@ -122,8 +122,12 @@ function initActions()
 			s.p:adj("E",-10)
 		end,
 		feed=function()
+			s.b:adj("E",100)
 		end,
-		bath=function() end,
+		bath=function()
+			s.b:adj("C",100)
+			s.p:adj("E",-10)
+		end,
 		sleepb=function() end,
 		play=function() end,
 		eat=function() end,
@@ -150,12 +154,13 @@ init()
 
 
 function updateTimeBasedStats()
-	s.p.E = math.max(0, s.p.E - 30 / ticsPerHour)
-	s.p.H = math.max(0, s.p.E - 10 / ticsPerHour)
-	s.p.C = math.max(0, s.p.E - 10 / ticsPerHour)
-	s.b.E = math.max(0, s.b.E - 50 / ticsPerHour)
-	s.b.H = math.max(0, s.b.E - 50 / ticsPerHour)
-	s.b.C = math.max(0, s.b.E - 20 / ticsPerHour)
+	s.p:adj("E",-30/ticsPerHour)
+	s.p:adj("H",-10/ticsPerHour)
+	s.p:adj("C",-10/ticsPerHour)
+
+	s.b:adj("E",-50/ticsPerHour)
+	s.b:adj("B", 10/ticsPerHour)
+	s.b:adj("C",-20/ticsPerHour)
 end
 
 function readKeys()
