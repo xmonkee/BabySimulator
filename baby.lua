@@ -1,6 +1,6 @@
--- title:   game title
--- author:  game developer, email, etc.
--- desc:    short description
+-- title:   Baby Simulator
+-- author:  Mayank Mandava, mayankmandava@gmail.com
+-- desc:    Baby simulator
 -- site:    website link
 -- license: MIT License (change this to your license of choice)
 -- version: 0.1
@@ -128,11 +128,23 @@ function initActions()
 			s.b:adj("C",100)
 			s.p:adj("E",-10)
 		end,
-		sleepb=function() end,
-		play=function() end,
-		eat=function() end,
-		sleep=function() end,
-		soc=function() end
+		sleepb=function()
+			s.b:adj("C",100)
+			s.p:adj("E",-20)
+		end,
+		play=function()
+			s.b:adj("B",-30)
+			s.p:adj("E",-10)
+		end,
+		eat=function()
+			s.p:adj("E",50)
+		end,
+		sleep=function()
+			s.p:adj("C",100)
+		end,
+		soc=function()
+			s.p:adj("H",50)
+		end
 	}
 
 	for i,item in pairs(s.m.items) do
