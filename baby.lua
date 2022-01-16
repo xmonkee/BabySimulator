@@ -29,7 +29,7 @@ end
 function initState()
 	s = {}
 
-	local baby = {E=100, C=100, B=0, DF=50}
+	local baby = {E=100, C=100, B=0, DF=50, asleep=false, sleptAt=0}
 	setmetatable(baby, {
 		__index=function(table,key)
 			if key=="H" then
@@ -87,71 +87,94 @@ function initState()
 			end
 		}
 	})
+	
+	local garbageTruck = {
+		present = false
+		arrivedAt = 0
+	}
 
 	s.b = baby
 	s.p = parent
 	s.m = menu
 	s.r = resources
+	s.g = garbageTruck
 end
 
 function initActions()
-	actions = {
-		work=function()
+	actions = {}
+		function actions.work()
 			s.r.money = s.r.money + 20
 			s.p:adj("E",-10)
-		end,
-		buyd=function()
+		end
+		function actions.buyd()
 			s.r:adj("money", -10)
 			s.r:adj("diap", 10)
-		end,
-		buyf=function()
+		end
+		function actions.buyf()
 			s.r:adj("food",30)
 			s.r:adj("money",-10)
-		end,
-		garb=function()
+		end
+		function actions.garb()
 			s.r:adj("trash",-s.r.trash)
-		end,
-		changed=function()
+		end
+		function actions.changed()
 			s.r:adj("diap",-1)
 			s.r:adj("trash",10)
 			s.b:adj("DF",-30)
-		end,
-		cook=function()
+		end
+		function actions.cook()
 			s.r:adj("food",-10)
 			s.r:adj("trash",20)
 			s.p:adj("E",-10)
-		end,
-		feed=function()
+		end
+		function actions.feed()
 			s.b:adj("E",100)
-		end,
-		bath=function()
+		end
+		function actions.bath()
 			s.b:adj("C",100)
 			s.p:adj("E",-10)
-		end,
-		sleepb=function()
+		end
+		function actions.sleepb()
 			s.b:adj("C",100)
 			s.p:adj("E",-20)
-		end,
-		play=function()
+		end
+		function actions.play()
 			s.b:adj("B",-30)
 			s.p:adj("E",-10)
-		end,
-		eat=function()
+		end
+		function actions.eat()
 			s.p:adj("E",50)
-		end,
-		sleep=function()
+		end
+		function actions.sleep()
 			s.p:adj("C",100)
-		end,
-		soc=function()
+		end
+		function actions.soc()
 			s.p:adj("H",50)
 		end
-	}
 
 	for i,item in pairs(s.m.items) do
 		if actions[item[1]] == nil then
 			error("action "..k.."not found")
 		end
 	end
+end
+
+function initEvents()
+	events = {}
+	function events.poop()
+		s.b:adj("D",30)
+	end
+	function events.garbCome()
+		s.g.present=true
+		s.g.arrivedAt=t
+	end
+	function events.garbGo()
+		s.g.present=false
+	end
+	function babyWakeUp()
+		s.b.asleep=false
+	end
+
 end
 
 function init()
@@ -169,10 +192,16 @@ function updateTimeBasedStats()
 	s.p:adj("E",-30/ticsPerHour)
 	s.p:adj("H",-10/ticsPerHour)
 	s.p:adj("C",-10/ticsPerHour)
-
 	s.b:adj("E",-50/ticsPerHour)
-	s.b:adj("B", 10/ticsPerHour)
-	s.b:adj("C",-20/ticsPerHour)
+	if s.b.asleep then
+		s.b:adj("C", 30/ticsPerHour)
+	else
+		s.b:adj("C", -20/ticsPerHour)
+		s.b:adj("B", 30/ticsPerHour)
+	end
+end
+
+function updateEvents()
 end
 
 function readKeys()
