@@ -9,10 +9,10 @@
 function initConstants()
 	t=0
 	labels = {
-		E="Ener", C="Calm", B="Boredom",
-		DF="DiaperFullness", H="Happ"
+		enr="Ener", clm="Calm", brd="Boredom",
+		dpf="DiaperFullness", hpy="Happ"
 	}
-	meterFields = {"E", "C", "H"}
+	meterFields = {"enr", "clm", "hpy"}
 	colors={
 		label=12,
 		meter=5,
@@ -29,17 +29,19 @@ end
 function initState()
 	s = {}
 
-	local baby = {E=100, C=100, B=0, DF=50, asleep=false, sleptAt=0}
+	local baby = {enr=100, clm=100, brd=0, dpf=50, asleep=false, sleptAt=0}
+	baby.meterFields = {"enr", "clm", "dpf", "brd"}
 	setmetatable(baby, {
 		__index=function(table,key)
-			if key=="H" then
-				return 100 - math.min(100, table.B + table.DF)
+			if key=="hpy" then
+				return 100 - math.min(100, table.brd + table.dpf)
 			end
 			return nil
 		end
 	})
 
-	local parent = {E=100, C=100, H=100}
+	local parent = {enr=100, clm=100, hpy=100}
+	parent.meterFields = {"enr", "clm", "hpy"}
 
 	function adjMetric(self,metric,val)
 		local nval = self[metric]+val
@@ -87,9 +89,9 @@ function initState()
 			end
 		}
 	})
-	
+
 	local garbageTruck = {
-		present = false
+		present = false,
 		arrivedAt = 0
 	}
 
@@ -104,7 +106,7 @@ function initActions()
 	actions = {}
 		function actions.work()
 			s.r.money = s.r.money + 20
-			s.p:adj("E",-10)
+			s.p:adj("enr",-10)
 		end
 		function actions.buyd()
 			s.r:adj("money", -10)
@@ -120,36 +122,36 @@ function initActions()
 		function actions.changed()
 			s.r:adj("diap",-1)
 			s.r:adj("trash",10)
-			s.b:adj("DF",-30)
+			s.b:adj("dpf",-30)
 		end
 		function actions.cook()
 			s.r:adj("food",-10)
 			s.r:adj("trash",20)
-			s.p:adj("E",-10)
+			s.p:adj("enr",-10)
 		end
 		function actions.feed()
-			s.b:adj("E",100)
+			s.b:adj("enr",100)
 		end
 		function actions.bath()
-			s.b:adj("C",100)
-			s.p:adj("E",-10)
+			s.b:adj("clm",100)
+			s.p:adj("enr",-10)
 		end
 		function actions.sleepb()
-			s.b:adj("C",100)
-			s.p:adj("E",-20)
+			s.b:adj("clm",100)
+			s.p:adj("enr",-20)
 		end
 		function actions.play()
-			s.b:adj("B",-30)
-			s.p:adj("E",-10)
+			s.b:adj("brd",-30)
+			s.p:adj("enr",-10)
 		end
 		function actions.eat()
-			s.p:adj("E",50)
+			s.p:adj("enr",50)
 		end
 		function actions.sleep()
-			s.p:adj("C",100)
+			s.p:adj("clm",100)
 		end
 		function actions.soc()
-			s.p:adj("H",50)
+			s.p:adj("hpy",50)
 		end
 
 	for i,item in pairs(s.m.items) do
@@ -162,7 +164,7 @@ end
 function initEvents()
 	events = {}
 	function events.poop()
-		s.b:adj("D",30)
+		s.b:adj("dpf",30)
 	end
 	function events.garbCome()
 		s.g.present=true
@@ -189,15 +191,15 @@ init()
 
 
 function updateTimeBasedStats()
-	s.p:adj("E",-30/ticsPerHour)
-	s.p:adj("H",-10/ticsPerHour)
-	s.p:adj("C",-10/ticsPerHour)
-	s.b:adj("E",-50/ticsPerHour)
+	s.p:adj("enr",-30/ticsPerHour)
+	s.p:adj("hpy",-10/ticsPerHour)
+	s.p:adj("clm",-10/ticsPerHour)
+	s.b:adj("enr",-50/ticsPerHour)
 	if s.b.asleep then
-		s.b:adj("C", 30/ticsPerHour)
+		s.b:adj("clm", 30/ticsPerHour)
 	else
-		s.b:adj("C", -20/ticsPerHour)
-		s.b:adj("B", 30/ticsPerHour)
+		s.b:adj("clm", -20/ticsPerHour)
+		s.b:adj("brd", 30/ticsPerHour)
 	end
 end
 
@@ -245,7 +247,7 @@ end
 
 function drawMeter(person, label, startx, starty)
 	print(label, startx, starty, colors.label)
-	for i,field in pairs(meterFields) do
+	for i,field in pairs(person.meterFields) do
 		local x=startx
 		local y = starty + (i)*8
 		x = x + print(labels[field],x,y,colors.label, true, 1, true) + 1
