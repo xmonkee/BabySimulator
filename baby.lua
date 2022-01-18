@@ -21,7 +21,7 @@ function initConstants()
 		selectedMenuItem=9,
 		menuItemText=12,
 	}
-	ticsPerSecond=.1 --actually it's 60, game is sped up by 60x
+	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
 end
@@ -95,11 +95,37 @@ function initState()
 		arrivedAt = 0
 	}
 
+	local notifications = {first=nil, size=0, last=nil}
+	function notifications.push(self, notification)
+		self.size = self.size + 1
+		if self.first == nil then
+			self.first = {msg= notification}
+			self.last = self.first
+		else
+			self.first = {msg=notification, nxt=self.first}
+			self.first.nxt.prev=self.first
+		end
+		while self.size > 5 do
+			self.last = self.last.prev
+			self.last.next = nil
+			self.size = self.size - 1
+		end
+	end
+
+	function notifications.iter(self)
+		curr = self.first
+		return function()
+			if curr ~= nil then return curr.msg end
+			curr = curr.nxt
+		end
+	end
+
 	s.b = baby
 	s.p = parent
 	s.m = menu
 	s.r = resources
 	s.g = garbageTruck
+	s.n = notifications
 end
 
 function initActions()
@@ -165,6 +191,7 @@ function initEvents()
 	events = {}
 	function events.poop()
 		s.b:adj("dpf",30)
+		s.b.poopedat=t
 	end
 	function events.garbCome()
 		s.g.present=true
@@ -183,6 +210,7 @@ function init()
 	initConstants()
 	initState()
 	initActions()
+	initEvents()
 end
 
 init()
@@ -203,7 +231,20 @@ function updateTimeBasedStats()
 	end
 end
 
+function fireEvent(event, notification)
+	event()
+	s.n:push(notification)
+end
+
 function updateEvents()
+	if math.random() < 100/(3*ticsPerHour) then
+		fireEvent(events.poop, "Baby Pooped")
+	end
+	if math.random() < 100/(3*ticsPerHour) then
+		if s.b.asleep then
+			fireEvent(events.babyWakeUp, "Baby Woke Up")
+		end
+	end
 end
 
 function readKeys()
@@ -224,6 +265,7 @@ function update()
 	minute=(t/ticsPerMinute) % 60
 	hour=(t/ticsPerHour) % 24
 	updateTimeBasedStats()
+	updateEvents()
 	readKeys()
 end
 
@@ -278,6 +320,14 @@ function drawClock()
 	110,1, colors.label, true, 1, true)
 end
 
+function drawNotifications()
+	local x,y = 100,100
+	for msg in s.n:iter() do
+		print(curr,x,y,5,true,1,true)
+		y=y+8
+	end
+end
+
 function draw()
 	cls(colors.background)
 	rect(119,0,1,136,5)
@@ -286,6 +336,7 @@ function draw()
 	drawResources()
 	drawClock()
 	drawMenu()
+	drawNotifications()
 end
 
 ------------------------------------------------------------------
