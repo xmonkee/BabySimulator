@@ -16,12 +16,13 @@ function initConstants()
 	colors={
 		label=12,
 		meter=5,
-		background=0,
+		background=15,
 		menuItem=10,
 		selectedMenuItem=9,
 		menuItemText=12,
+		textShadow=0,
 	}
-	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
+	ticsPerSecond=0.3 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
 end
@@ -29,7 +30,7 @@ end
 function initState()
 	s = {}
 
-	local baby = {enr=100, clm=100, brd=0, dpf=50, asleep=false, sleptAt=0}
+	local baby = {enr=100, clm=100, brd=0, dpf=0, asleep=false, sleptAt=0}
 	baby.meterFields = {"enr", "clm", "dpf", "brd"}
 	setmetatable(baby, {
 		__index=function(table,key)
@@ -99,24 +100,31 @@ function initState()
 	function notifications.push(self, notification)
 		self.size = self.size + 1
 		if self.first == nil then
-			self.first = {msg= notification}
+			self.first = {msg=notification,ts=timestamp()}
 			self.last = self.first
 		else
-			self.first = {msg=notification, nxt=self.first}
+			self.first = {
+				msg=notification,
+				ts=timestamp(),
+				nxt=self.first
+			}
 			self.first.nxt.prev=self.first
 		end
 		while self.size > 5 do
 			self.last = self.last.prev
-			self.last.next = nil
+			self.last.nxt = nil
 			self.size = self.size - 1
 		end
 	end
 
 	function notifications.iter(self)
-		curr = self.first
+		local curr = self.first
 		return function()
-			if curr ~= nil then return curr.msg end
-			curr = curr.nxt
+			if curr ~= nil then
+				local ret = curr
+				curr = curr.nxt
+				return ret
+			end
 		end
 	end
 
@@ -237,10 +245,10 @@ function fireEvent(event, notification)
 end
 
 function updateEvents()
-	if math.random() < 100/(3*ticsPerHour) then
+	if math.random() < 1/(3*ticsPerHour) then
 		fireEvent(events.poop, "Baby Pooped")
 	end
-	if math.random() < 100/(3*ticsPerHour) then
+	if math.random() < 1/(3*ticsPerHour) then
 		if s.b.asleep then
 			fireEvent(events.babyWakeUp, "Baby Woke Up")
 		end
@@ -271,13 +279,18 @@ end
 
 ---------------------------------------------------------------
 
+function sprint(msg,x,y,color)
+	print(msg,x+1,y+1,colors.textShadow,true,1,true)
+	return print(msg,x,y,color,true,1,true)
+end
+
 function drawMenu()
 	if not s.m.shown then return end
 	function drawItem(item,x,y,selected)
 		local color = colors.menuItem
 		if selected then color = colors.selectedMenuItem end
 		rect(x,y,61,10,color)
-		print(item[2],x+1,y+1,colors.menuItemText,true,1,true)
+		sprint(item[2],x+1,y+1,colors.menuItemText)
 	end
 	local x=130
 	local ys=10
@@ -292,7 +305,7 @@ function drawMeter(person, label, startx, starty)
 	for i,field in pairs(person.meterFields) do
 		local x=startx
 		local y = starty + (i)*8
-		x = x + print(labels[field],x,y,colors.label, true, 1, true) + 1
+		x = x + sprint(labels[field],x,y,colors.label) + 1
 		rectb(x,y,24,7,colors.label)
 		rect(x+2,y+2,person[field]/20*4,3, colors.meter)
 	end
@@ -302,7 +315,7 @@ function drawResources()
 	local x=200
 	local y=0
 	for k,v in pairs(s.r) do
-		print(k.."="..v,x,y,10,true,1,true)
+		sprint(k.."="..v,x,y,10)
 		y=y+8
 	end
 end
@@ -312,26 +325,31 @@ function drawMeters()
 	drawMeter(s.p, "Papa", 0, 35)
 end
 
+function timestamp()
+	return string.format(
+		"%.2d:%.2d",
+		math.floor(hour),
+		math.floor(minute)
+	)
+end
+
 function drawClock()
-	spr(258,100,0,0)
-	print(string.format("%.2d:%.2d",
-	math.floor(hour),
-	math.floor(minute)),
-	110,1, colors.label, true, 1, true)
+	spr(256,100,0,0)
+	sprint(timestamp(),110,1,colors.label)
 end
 
 function drawNotifications()
-	local x,y = 100,100
-	for msg in s.n:iter() do
-		print(curr,x,y,5,true,1,true)
+	local x,y = 100,50
+	for item in s.n:iter() do
+		sprint(item.ts.." "..item.msg,x,y,5)
 		y=y+8
 	end
 end
 
 function draw()
 	cls(colors.background)
-	rect(119,0,1,136,5)
-	rect(0,67,240,1,5)
+	--rect(119,0,1,136,5)
+	--rect(0,67,240,1,5)
 	drawMeters()
 	drawResources()
 	drawClock()
@@ -348,10 +366,40 @@ end
 
 
 -- <SPRITES>
--- 000:00cdedc00d00c00dc000c000d000c000e0ccc000d0000200c00000200d00000d
--- 001:0000000000000000c0000000d0000000e0000000d0000000c000000000000000
--- 002:00cde0000c000d00c00c00e0c0cc00e0c00000e00c000d0000cde00000000000
--- 016:00cdedc000000000000000000000000000000000000000000000000000000000
+-- 000:00cde0000c000d00c00c00e0c0cc00e0c00000e00c000d0000cde00000000000
+-- 001:000ee000eeeeeeeeeeeeeeee0cecece00cecece00cecece00cecece00eeeeee0
+-- 002:0000000002202200222222202222222002222200002220000002000000000000
+-- 003:0000cccc00dddddceeeeedc0000edc0000edcccc0eddddd0eeeee00000000000
+-- 004:c0000000000000000000000000000000c0000000000000000000000000000000
+-- 005:55555555566666665665555556555ccc56555ccc566555555666666655555555
+-- 006:555555556666666555555665ccc55565ccc55565555556656666666555555555
+-- 007:00c333000c444440c4c44c43c4444443c4244243c44224430c44444000c33300
+-- 016:00000444000044440004444400440c4000440c40004444440004444400004444
+-- 017:400000004400000044400000c4440000c4440000444400004440000044000000
+-- 018:0000222200222222002222240222244402200444220004442000099900009999
+-- 019:2200000022000000c00000004400000044000000440000009900000099900000
+-- 020:03300000322300c232c230c2322230c2322300c23230000003000000000000aa
+-- 021:00000000222c0000222c0000222c0000222c00000000000000000000aaaa0000
+-- 022:444444444444444444444444222222222333333323cccc3321cccc1121999911
+-- 023:4444444444444444444444442222222263633332366333322332111223331112
+-- 024:4444444444444444444444442222222223333333233333332111111121111111
+-- 025:4444444444444444444444442222222233333332333333321111111211111112
+-- 027:00000fff00000fcc00000fcc00000fff0000000f0000222f000233ff00233fff
+-- 028:fff00000ccf00000ccf00000fff00000f0000000f2220000ff332000fff33200
+-- 032:000444440044444404444444000ccccc0004cccc00044ccc0004400000044000
+-- 033:444000004444000044444000ccc00000cc400000c44000000440000004400000
+-- 034:000999990099099900c0099900000ccc00000cc000000cc000000cc000000990
+-- 035:99990000990990009900c000cc000000cc000000cc000000cc00000099000000
+-- 036:060600aa00660099023320990233209902332099023200990220009900200000
+-- 037:aaaa000099990000999900009999000099990000999900009999000000000000
+-- 038:2199991122222222233333332333333321c222c121c222c121c222c122222222
+-- 039:23321112222222223333333232223332133311123c2231121333331222222222
+-- 040:2111111122222222233333332333333321111111211111112111111122222222
+-- 041:1111111222222222333333323333333211111112111111121111111222222222
+-- 043:0233333322222222023200000232000002322222023200000220000002000000
+-- 044:3333332022222222000023200000232022222320000023200000220000002000
+-- 048:00033300000033300003333300333333033c333c333333333333ccc303333333
+-- 049:0000000000000000000000003000000033000000333000003330000033000000
 -- </SPRITES>
 
 -- <WAVES>
@@ -367,5 +415,4 @@ end
 -- <PALETTE>
 -- 000:1a1c2c5d275db13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57
 -- </PALETTE>
-
 
