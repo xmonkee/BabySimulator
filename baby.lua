@@ -231,10 +231,10 @@ end
 
 function initLocs()
 	locs = {}
-	locs.work = {x=200,y=20,w=16,h=16}
-	locs.groc = {x=0,y=20,w=16,h=16}
-	locs.stove = {x=100,y=20}
-	locs.trash = {x=0,y=100}
+	locs.work = {x=200,y=20,w=16,h=16,s=282}
+	locs.groc = {x=0,y=20,w=16,h=16,s=278}
+	locs.stove = {x=100,y=20,w=16,h=16,s=284}
+	locs.trash = {x=0,y=100,w=16,h=16,s=320}
 end
 
 function init()
