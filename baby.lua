@@ -346,15 +346,19 @@ function drawNotifications()
 	end
 end
 
- for x=0,240/8 do
-	 for y=0,136/8 do
-		 local i=math.random(1,7)
-		 local j=math.random(1,7)
-		 local s = j*16+i
-		 trace("x"..x.." y"..y.." i"..i.." j"..j.." s"..s)
-		 mset(x,y,s)
-	 end
- end
+for i=0,30,4 do
+	for j=0,17,4 do
+		local starts = {0,2,4,32,34,36,64,66,68}
+		local s = starts[math.random(#starts)]
+		for id=0,3 do
+			for jd=0,3 do
+				local sd=s+jd*16+id
+				mset(i+id,j+jd, sd)
+			end
+		end
+	end
+end
+
 function draw()
   map()
 	--cls(colors.background)
