@@ -60,10 +60,22 @@ function initState()
 
 	local parent = {enr=100, clm=100, hpy=100}
 	parent.meterFields = {"enr", "clm", "hpy"}
-	parent.loc = {x=100,y=100,spr=274,sc=2,w=2,h=2}
+	parent.loc = {x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2}
+
 	function parent.draw(self)
 		local l = self.loc
 		spr(l.spr,l.x,l.y,0,l.sc,0,0,l.w,l.h)
+	end
+
+	function parent.mv(self, dx, dy)
+		local l = self.loc
+		local x,y=l.x+dx,l.y+dy
+		local pbloc = {x1=x+5*l.sc,y1=y+14*l.sc,x2=x+10*l.sc,y2=y+16*l.sc}
+		if not anyCollisions(pbloc, blocs) then
+			l.x=math.max(0, math.min(l.x+dx, 210))
+			l.y=math.max(10, math.min(l.y+dy, 100))
+		end
+		l.spr = l.ospr + (t%3)*2
 	end
 
 	function adjMetric(self,metric,val)
@@ -74,17 +86,6 @@ function initState()
 
 	baby.adj=adjMetric
 	parent.adj=adjMetric
-
-	function parent.mv(self, dx, dy)
-		local l = self.loc
-		local x,y=l.x+dx,l.y+dy
-		local pbloc = {x1=x+5*l.sc,y1=y+14*l.sc,x2=x+10*l.sc,y2=y+16*l.sc}
-		if not anyCollisions(pbloc, blocs) then
-			l.x=math.max(0, math.min(l.x+dx, 210))
-			l.y=math.max(10, math.min(l.y+dy, 100))
-		end
-	end
-
 
 	local menu = {
 		shown=false,
@@ -277,6 +278,9 @@ init()
 
 -----------------------------------------------------------------
 
+function animResets()
+	s.p.loc.spr=s.p.loc.ospr
+end
 
 function updateTimeBasedStats()
 	s.p:adj("enr",-30/ticsPerHour)
@@ -329,6 +333,7 @@ function update()
 	t=t+1
 	minute=(t/ticsPerMinute) % 60
 	hour=(t/ticsPerHour) % 24
+	animResets()
 	updateTimeBasedStats()
 	updateEvents()
 	readKeys()
