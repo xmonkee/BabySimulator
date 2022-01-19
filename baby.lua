@@ -60,11 +60,11 @@ function initState()
 
 	local parent = {enr=100, clm=100, hpy=100}
 	parent.meterFields = {"enr", "clm", "hpy"}
-	parent.loc = {x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2}
+	parent.loc = {x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,flip=0}
 
 	function parent.draw(self)
 		local l = self.loc
-		spr(l.spr,l.x,l.y,0,l.sc,0,0,l.w,l.h)
+		spr(l.spr,l.x,l.y,0,l.sc,l.flip,0,l.w,l.h)
 	end
 
 	function parent.mv(self, dx, dy)
@@ -75,7 +75,8 @@ function initState()
 			l.x=math.max(0, math.min(l.x+dx, 210))
 			l.y=math.max(10, math.min(l.y+dy, 100))
 		end
-		l.spr = l.ospr + (t%3)*2
+		l.spr = l.ospr + ((t//10)%2 + 1)*2
+		if dx==-1 then l.flip=1 elseif dx==1 then l.flip=0 end
 	end
 
 	function adjMetric(self,metric,val)
