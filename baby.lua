@@ -1,16 +1,18 @@
-function collision(obj1, obj2)
-	local left,right = obj1,obj2
-	local up,down = obj1,obj2
-	if obj1.x1 > obj2.x1 then left,right = right,left end
-	if obj1.y1 > obj2.y1 then up,down = down,up end
+require "utils"
+
+function collision(bloc1, bloc2)
+	local left,right = bloc1,bloc2
+	local up,down = bloc1,bloc2
+	if bloc1.x1 > bloc2.x1 then left,right = right,left end
+	if bloc1.y1 > bloc2.y1 then up,down = down,up end
 	if left.x2 < right.x1 then return false end
 	if up.y2 < down.y1 then return false end
 	return true
 end
 
-function anyCollisions(obj1, objs)
+function anyCollisions(bloc, objs)
 	for _,obj in pairs(objs) do
-		if collision(obj1, obj) then return true end
+		if collision(bloc, obj.bloc) then return true end
 	end
 	return false
 end
@@ -36,20 +38,35 @@ function initConstants()
 	ticsPerHour=60*ticsPerMinute
 end
 
+function initBaby()
+	local baby = {enr=100, clm=100, brd=0, dpf=0, asleep=false, sleptAt=0}
+	baby.meterFields = {"enr", "clm", "dpf", "brd"}
+	baby.loc = {x=200,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12}
+	baby.bloc = calcBloc(baby.loc)
+
+	function baby.sleep(self)
+		self.asleep=true
+		self.loc.spr=self.loc.ospr+self.loc.w
+	end
+
+	function baby.awake(self)
+		self.asleep=false
+		self.loc.spr=self.loc.ospr
+	end
+
+	function baby.draw(self)
+		local loc = self.loc
+		spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+	end
+
+	return baby
+
+end
+
 function initState()
 	s = {}
 
-	local baby = {enr=100, clm=100, brd=0, dpf=0, asleep=false, sleptAt=0}
-	baby.meterFields = {"enr", "clm", "dpf", "brd"}
-	setmetatable(baby, {
-		__index=function(table,key)
-			if key=="hpy" then
-				return 100 - math.min(100, table.brd + table.dpf)
-			end
-			return nil
-		end
-	})
-
+	local baby = initBaby()
 	local parent = {enr=100, clm=100, hpy=100}
 	parent.meterFields = {"enr", "clm", "hpy"}
 	parent.loc = {x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,flip=0}
@@ -63,7 +80,7 @@ function initState()
 		local l = self.loc
 		local x,y=l.x+dx,l.y+dy
 		local pbloc = {x1=x+6*l.sc,y1=y+14*l.sc,x2=x+10*l.sc,y2=y+16*l.sc}
-		if not anyCollisions(pbloc, blocs) then
+		if not anyCollisions(pbloc, objs) then
 			l.x=math.max(0, math.min(l.x+dx, 210))
 			l.y=math.max(10, math.min(l.y+dy, 100))
 		end
@@ -198,8 +215,8 @@ function initActions()
 			s.p:adj("enr",-10)
 		end
 		function actions.sleepb()
-			s.b:adj("clm",100)
 			s.p:adj("enr",-20)
+			s.b:sleep()
 		end
 		function actions.play()
 			s.b:adj("brd",-30)
@@ -235,28 +252,30 @@ function initEvents()
 	function events.garbGo()
 		s.g.present=false
 	end
-	function babyWakeUp()
-		s.b.asleep=false
+	function events.babyWakeUp()
+		s.b:awake()
 	end
 
 end
 
-function initLocs()
-	locs = {}
-	blocs = {}
-	locs.work = {x=200,y=15,w=2,h=2,s=282,sc=2,rt=16}
-	locs.groc = {x=10,y=15,w=2,h=2,s=278,sc=2,rt=16}
-	locs.stove = {x=110,y=15,w=2,h=2,s=284,sc=2,rt=16}
-	locs.trash = {x=20,y=116,w=2,h=2,s=274,sc=1,rt=16}
-	locs.baby = {x=200,y=116,w=2,h=2,s=272,sc=1,rt=12}
-	for _,props in pairs(locs) do
-		table.insert(blocs,{
-			x1=props.x,
-			y1=props.y,
-			x2=props.x+props.rt*props.sc,
-			y2=props.y+props.h*props.sc*8
-		})
-	end
+function _objDraw(self)
+	local loc = self.loc
+	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+end
+
+function makeObj(loc)
+	local obj = {loc=loc,draw=_objDraw}
+	obj.bloc = calcBloc(obj.loc)
+	return obj
+end
+
+function initObjs()
+	objs = {}
+	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2,rt=16})
+	objs.groc = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2,rt=16})
+	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2,rt=16})
+	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1,rt=16})
+	objs.baby = s.b
 end
 
 function init()
@@ -264,7 +283,7 @@ function init()
 	initState()
 	initActions()
 	initEvents()
-	initLocs()
+	initObjs()
 end
 
 init()
@@ -366,15 +385,6 @@ function drawMeter(person, label, startx, starty)
 	end
 end
 
-function drawResources()
-	--local x=200
-	--local y=0
-	--for k,v in pairs(s.r) do
-		--sprint(k.."="..v,x,y,10)
-		--y=y+8
-	--end
-end
-
 function drawMeters()
 	drawMeter(s.b, "Baby", 0, 0)
 	drawMeter(s.p, "Mom", 0, 35)
@@ -393,9 +403,9 @@ function drawClock()
 	sprint(timestamp(),110,1,colors.label)
 end
 
-function drawLocs()
-	for locName,props in pairs(locs) do
-		spr(props.s,props.x,props.y,0,props.sc,0,0,props.w,props.h)
+function drawObjs()
+	for _,obj in pairs(objs) do
+		obj:draw()
 	end
 end
 
@@ -410,9 +420,8 @@ end
 function draw()
 	cls()
   map()
-	drawResources()
 	drawClock()
-	drawLocs()
+	drawObjs()
 	s.p:draw()
 	drawMenu()
 	drawNotifications()
