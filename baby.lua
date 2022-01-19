@@ -348,8 +348,8 @@ end
 
 for i=0,30,4 do
 	for j=0,17,4 do
-		local starts = {0,2,4,32,34,36,64,66,68}
-		local s = starts[math.random(#starts)]
+		local s = math.random(0,2)*32 + math.random(0,2)*2
+		if math.random(2) == 1 then s = 68 end
 		for id=0,3 do
 			for jd=0,3 do
 				local sd=s+jd*16+id
