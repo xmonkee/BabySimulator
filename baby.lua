@@ -6,6 +6,23 @@
 -- version: 0.1
 -- script:  lua
 
+function collision(obj1, obj2)
+	local left,right = obj1,obj2
+	local up,down = obj1,obj2
+	if obj1.x1 > obj2.x1 then left,right = right,left end
+	if obj1.y1 > obj2.y1 then up,down = down,up end
+	if left.x2 < right.x1 then return false end
+	if up.y2 < down.y1 then return false end
+	return true
+end
+
+function anyCollisions(obj1, objs)
+	for _,obj in pairs(objs) do
+		if collision(obj1, obj) then return true end
+	end
+	return false
+end
+
 function initConstants()
 	t=0
 	labels = {
@@ -41,8 +58,13 @@ function initState()
 		end
 	})
 
-	local parent = {enr=100, clm=100, hpy=100, x=100,y=100,spr=274}
+	local parent = {enr=100, clm=100, hpy=100}
 	parent.meterFields = {"enr", "clm", "hpy"}
+	parent.loc = {x=100,y=100,spr=274,sc=2,w=2,h=2}
+	function parent.draw(self)
+		local l = self.loc
+		spr(l.spr,l.x,l.y,0,l.sc,0,0,l.w,l.h)
+	end
 
 	function adjMetric(self,metric,val)
 		local nval = self[metric]+val
@@ -53,17 +75,14 @@ function initState()
 	baby.adj=adjMetric
 	parent.adj=adjMetric
 
-	function parent.rt(self)
-		self.x=math.min(self.x+1, 220)
-	end
-	function parent.lt(self)
-		self.x=math.max(self.x-1, 20)
-	end
-	function parent.up(self)
-		self.y=math.max(self.y-1, 20)
-	end
-	function parent.dn(self)
-		self.y=math.min(self.y+1, 116)
+	function parent.mv(self, dx, dy)
+		local l = self.loc
+		local x,y=l.x+dx,l.y+dy
+		local pbloc = {x1=x+6*l.sc,y1=y+14*l.sc,x2=x+10*l.sc,y2=y+16*l.sc}
+		if not anyCollisions(pbloc, blocs) then
+			l.x=math.max(0, math.min(l.x+dx, 210))
+			l.y=math.max(10, math.min(l.y+dy, 100))
+		end
 	end
 
 
@@ -231,17 +250,17 @@ end
 function initLocs()
 	locs = {}
 	blocs = {}
-	locs.work = {x=200,y=20,w=16,h=16,s=282,sc=2}
-	locs.groc = {x=20,y=20,w=16,h=16,s=278,sc=2}
-	locs.stove = {x=100,y=20,w=16,h=16,s=284,sc=2}
-	locs.trash = {x=20,y=116,w=16,h=16,s=320,sc=1}
-	locs.baby = {x=200,y=100,w=16,h=16,s=272,sc=2}
+	locs.work = {x=200,y=20,w=2,h=2,s=282,sc=2}
+	locs.groc = {x=20,y=20,w=2,h=2,s=278,sc=2}
+	locs.stove = {x=100,y=20,w=2,h=2,s=284,sc=2}
+	locs.trash = {x=20,y=116,w=2,h=2,s=320,sc=1}
+	locs.baby = {x=200,y=100,w=2,h=2,s=272,sc=2}
 	for _,props in pairs(locs) do
 		table.insert(blocs,{
 			x1=props.x,
 			y1=props.y,
-			x2=props.x+props.w*props.sc,
-			y2=props.y+props.h*props.sc
+			x2=props.x+props.w*props.sc*8,
+			y2=props.y+props.h*props.sc*8
 		})
 	end
 end
@@ -297,10 +316,10 @@ function readKeys()
 			s.m.shown=false
 		end
 	else
-		if btn(0) then s.p:up() end
-		if btn(1) then s.p:dn() end
-		if btn(2) then s.p:lt() end
-		if btn(3) then s.p:rt() end
+		if btn(0) then s.p:mv(0,-1) end
+		if btn(1) then s.p:mv(0, 1) end
+		if btn(2) then s.p:mv(-1,0) end
+		if btn(3) then s.p:mv( 1,0) end
 	end
 	if btnp(4,60,5) and not s.m.shown then s.m.shown=true end
 	if btnp(5,60,5) and s.m.shown then s.m.shown=false end
@@ -378,12 +397,8 @@ end
 
 function drawLocs()
 	for locName,props in pairs(locs) do
-		spr(props.s,props.x,props.y,0,props.sc,0,0,2,2)
+		spr(props.s,props.x,props.y,0,props.sc,0,0,props.w,props.h)
 	end
-end
-
-function drawParent()
-	spr(s.p.spr,s.p.x,s.p.y,0,2,0,0,2,2)
 end
 
 function drawNotifications()
@@ -400,7 +415,7 @@ function draw()
 	drawResources()
 	drawClock()
 	drawLocs()
-	drawParent()
+	s.p:draw()
 	drawMenu()
 	drawNotifications()
 end
