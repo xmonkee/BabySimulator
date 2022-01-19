@@ -231,10 +231,21 @@ end
 
 function initLocs()
 	locs = {}
-	locs.work = {x=200,y=20,w=16,h=16,s=282}
-	locs.groc = {x=0,y=20,w=16,h=16,s=278}
-	locs.stove = {x=100,y=20,w=16,h=16,s=284}
-	locs.trash = {x=0,y=100,w=16,h=16,s=320}
+	blocs = {}
+	locs.work = {x=200,y=20,w=16,h=16,s=282,sc=2}
+	locs.groc = {x=20,y=20,w=16,h=16,s=278,sc=2}
+	locs.stove = {x=100,y=20,w=16,h=16,s=284,sc=2}
+	locs.trash = {x=20,y=116,w=16,h=16,s=320,sc=1}
+	locs.baby = {x=200,y=100,w=16,h=16,s=272,sc=2}
+	locs.parent = {x=100,y=100,w=16,h=16,s=274,sc=2}
+	for _,props in pairs(locs) do
+		table.insert(blocs,{
+			x1=props.x,
+			y1=props.y,
+			x2=props.x+props.w*props.sc,
+			y2=props.y+props.h*props.sc
+		})
+	end
 end
 
 function init()
@@ -243,6 +254,7 @@ function init()
 	initActions()
 	initEvents()
 	initFloor()
+	initLocs()
 end
 
 init()
@@ -346,7 +358,7 @@ end
 
 function drawMeters()
 	drawMeter(s.b, "Baby", 0, 0)
-	drawMeter(s.p, "Papa", 0, 35)
+	drawMeter(s.p, "Mom", 0, 35)
 end
 
 function timestamp()
@@ -362,6 +374,12 @@ function drawClock()
 	sprint(timestamp(),110,1,colors.label)
 end
 
+function drawLocs()
+	for locName,props in pairs(locs) do
+		spr(props.s,props.x,props.y,0,props.sc,0,0,2,2)
+	end
+end
+
 function drawNotifications()
 	local x,y = 100,50
 	for item in s.n:iter() do
@@ -375,6 +393,7 @@ function draw()
   map()
 	drawResources()
 	drawClock()
+	drawLocs()
 	drawMenu()
 	drawNotifications()
 end
