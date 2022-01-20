@@ -51,11 +51,15 @@ function initBaby()
 		end
 		local isRed = self.props.poops >= 2 and (t//20%2) == 0
 		if isRed then withSwap(4,3,drawBaby) else drawBaby() end
-		for i=1,self.props.poops do -- draw the poops
+
+		-- draw the poops
+		for i=1,self.props.poops do
 			spr(368,loc.x+loc.w*loc.sc*8+2,loc.y+9*(i-2),0,1,0,0,2,1)
 		end
-		rectb(loc.x,loc.y-20,24,7,colors.label)
-		rect(loc.x+2,loc.y+2,baby:happ()/5,3,colors.meter)
+		-- Draw happ meter
+		local h = math.ceil(baby:happ()/100*14)
+		rectb(loc.x-4,loc.y,4,16,colors.label)
+		rect(loc.x-3,loc.y+15-h,2,h,colors.meter)
 	end
 
 	baby.adj = adjMetric
@@ -175,6 +179,7 @@ function initState()
 	s.r = initResources()
 	s.g = {here=false,arrivedAt=0}
 	s.n = initNotifications()
+	s.go = false -- game over
 end
 
 function initActions()
@@ -280,6 +285,10 @@ function animResets()
 	s.p.loc.spr=s.p.loc.ospr
 end
 
+function updateLiveliness()
+	if s.b:happ() <= 0 then s.go = true end
+end
+
 function updateTimeBasedStats()
 	s.p:adj("enr",-30/ticsPerHour)
 	s.p:adj("hpy",-10/ticsPerHour)
@@ -332,6 +341,8 @@ function update()
 	minute=(t/ticsPerMinute) % 60
 	hour=(t/ticsPerHour) % 24
 	animResets()
+	if s.go then return end
+	updateLiveliness()
 	updateTimeBasedStats()
 	updateEvents()
 	readKeys()
@@ -403,6 +414,13 @@ function drawNotifications()
 	end
 end
 
+function drawGameOver()
+	if s.go then
+		rect(80,52,80,40,0)
+		print("GAME OVER", 92, 70, 5*(t/10%3))
+	end
+end
+
 function draw()
 	cls()
   map()
@@ -411,6 +429,7 @@ function draw()
 	s.p:draw()
 	drawMenu()
 	drawNotifications()
+	drawGameOver()
 end
 
 ------------------------------------------------------------------
