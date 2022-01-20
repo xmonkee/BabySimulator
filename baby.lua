@@ -21,7 +21,7 @@ function initConstants()
 	t=0
 	labels = {
 		enr="Ener", clm="Calm", brd="Boredom",
-		dpf="DiaperFullness", hpy="Happ"
+		poops="DiaperFullness", hpy="Happ"
 	}
 	meterFields = {"enr", "clm", "hpy"}
 	colors={
@@ -38,11 +38,17 @@ function initConstants()
 	ticsPerHour=60*ticsPerMinute
 end
 
+function adjMetric(self,metric,val)
+	local nval = self.props[metric]+val
+	nval = math.max(0,math.min(100,nval))
+	self.props[metric]=nval
+end
+
 function initBaby()
-	local baby = {enr=100, clm=100, brd=0, dpf=0, asleep=false, sleptAt=0}
-	baby.meterFields = {"enr", "clm", "dpf", "brd"}
-	baby.loc = {x=200,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12}
-	baby.bloc = calcBloc(baby.loc)
+	local baby = makeObj({x=200,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
+	baby.props = {enr=100, brd=0, poops=0, clm=0}
+	baby.asleep=false
+	baby.sleptAt=0
 
 	function baby.sleep(self)
 		self.asleep=true
@@ -56,20 +62,20 @@ function initBaby()
 
 	function baby.draw(self)
 		local loc = self.loc
-		spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+		local flip = t//240%2
+		spr(loc.spr,loc.x,loc.y,0,loc.sc,flip,0,loc.w,loc.h)
+		for i=1,self.props.poops do
+			spr(368,loc.x+loc.w*loc.sc*8+2,loc.y+9*(i-2),0,1,0,0,2,1)
+		end
 	end
 
+	baby.adj = adjMetric
 	return baby
-
 end
 
-function initState()
-	s = {}
-
-	local baby = initBaby()
-	local parent = {enr=100, clm=100, hpy=100}
-	parent.meterFields = {"enr", "clm", "hpy"}
-	parent.loc = {x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,flip=0}
+function initParent()
+	local parent = makeObj({x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,flip=0})
+	parent.props = {enr=100, clm=100, hpy=100}
 
 	function parent.draw(self)
 		local l = self.loc
@@ -88,15 +94,11 @@ function initState()
 		if dx==-1 then l.flip=1 elseif dx==1 then l.flip=0 end
 	end
 
-	function adjMetric(self,metric,val)
-		local nval = self[metric]+val
-		nval = math.max(0,math.min(100,nval))
-		self[metric]=nval
-	end
+	parent.adj = adjMetric
+	return parent
+end
 
-	baby.adj=adjMetric
-	parent.adj=adjMetric
-
+function initMenu()
 	local menu = {
 		shown=false,
 		items={
@@ -120,7 +122,10 @@ function initState()
 			self.selected = math.max(1, self.selected-1)
 		end
 	}
+	return menu
+end
 
+function initResources()
 	local resources = {
 		money=100,
 		food=100,
@@ -134,12 +139,10 @@ function initState()
 			end
 		}
 	})
+	return resources
+end
 
-	local garbageTruck = {
-		present = false,
-		arrivedAt = 0
-	}
-
+function initNotifications()
 	local notifications = {first=nil, size=0, last=nil}
 	function notifications.push(self, notification)
 		self.size = self.size + 1
@@ -172,12 +175,17 @@ function initState()
 		end
 	end
 
-	s.b = baby
-	s.p = parent
-	s.m = menu
-	s.r = resources
-	s.g = garbageTruck
-	s.n = notifications
+	return notifications
+end
+
+function initState()
+	s = {}
+	s.b = initBaby()
+	s.p = initParent()
+	s.m = initMenu()
+	s.r = initResources()
+	s.g = {here=false,arrivedAt=0}
+	s.n = initNotifications()
 end
 
 function initActions()
@@ -200,7 +208,7 @@ function initActions()
 		function actions.changed()
 			s.r:adj("diap",-1)
 			s.r:adj("trash",10)
-			s.b:adj("dpf",-30)
+			s.b.props.poops=0
 		end
 		function actions.cook()
 			s.r:adj("food",-10)
@@ -242,8 +250,8 @@ end
 function initEvents()
 	events = {}
 	function events.poop()
-		s.b:adj("dpf",30)
-		s.b.poopedat=t
+		s.b:adj("poops",1)
+		s.b.poopedAt=t
 	end
 	function events.garbCome()
 		s.g.present=true
@@ -258,23 +266,12 @@ function initEvents()
 
 end
 
-function _objDraw(self)
-	local loc = self.loc
-	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
-end
-
-function makeObj(loc)
-	local obj = {loc=loc,draw=_objDraw}
-	obj.bloc = calcBloc(obj.loc)
-	return obj
-end
-
 function initObjs()
 	objs = {}
-	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2,rt=16})
-	objs.groc = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2,rt=16})
-	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2,rt=16})
-	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1,rt=16})
+	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
+	objs.groc = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
+	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
+	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
 	objs.baby = s.b
 end
 
@@ -313,7 +310,7 @@ function fireEvent(event, notification)
 end
 
 function updateEvents()
-	if math.random() < 1/(3*ticsPerHour) then
+	if math.random() < 10/(3*ticsPerHour) then
 		fireEvent(events.poop, "Baby Pooped")
 	end
 	if math.random() < 1/(3*ticsPerHour) then
