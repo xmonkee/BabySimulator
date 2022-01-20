@@ -1,29 +1,7 @@
 require "utils"
 
-function collision(bloc1, bloc2)
-	local left,right = bloc1,bloc2
-	local up,down = bloc1,bloc2
-	if bloc1.x1 > bloc2.x1 then left,right = right,left end
-	if bloc1.y1 > bloc2.y1 then up,down = down,up end
-	if left.x2 < right.x1 then return false end
-	if up.y2 < down.y1 then return false end
-	return true
-end
-
-function anyCollisions(bloc, objs)
-	for _,obj in pairs(objs) do
-		if collision(bloc, obj.bloc) then return true end
-	end
-	return false
-end
-
 function initConstants()
 	t=0
-	labels = {
-		enr="Ener", clm="Calm", brd="Boredom",
-		poops="DiaperFullness", hpy="Happ"
-	}
-	meterFields = {"enr", "clm", "hpy"}
 	colors={
 		label=12,
 		meter=5,
@@ -46,10 +24,15 @@ end
 
 function initBaby()
 	local baby = makeObj({x=200,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
-	baby.props = {enr=100, brd=0, poops=0, clm=0}
+	baby.props = {enr=100, brd=0, poops=0, sleepy=0}
+
+	function baby.happ(self)
+		local p = self.props
+		return ((p.enr/100) * (100-p.brd)/100 * (3-p.poops)/3 * (100-p.sleepy)/100)*100
+	end
+
 	baby.asleep=false
 	baby.sleptAt=0
-
 	function baby.sleep(self)
 		self.asleep=true
 		self.loc.spr=self.loc.ospr+self.loc.w
@@ -63,10 +46,16 @@ function initBaby()
 	function baby.draw(self)
 		local loc = self.loc
 		local flip = t//240%2
-		spr(loc.spr,loc.x,loc.y,0,loc.sc,flip,0,loc.w,loc.h)
-		for i=1,self.props.poops do
+		local function drawBaby()
+			spr(loc.spr,loc.x,loc.y,0,loc.sc,flip,0,loc.w,loc.h)
+		end
+		local isRed = self.props.poops >= 2 and (t//20%2) == 0
+		if isRed then withSwap(4,3,drawBaby) else drawBaby() end
+		for i=1,self.props.poops do -- draw the poops
 			spr(368,loc.x+loc.w*loc.sc*8+2,loc.y+9*(i-2),0,1,0,0,2,1)
 		end
+		rectb(loc.x,loc.y-20,24,7,colors.label)
+		rect(loc.x+2,loc.y+2,baby:happ()/5,3,colors.meter)
 	end
 
 	baby.adj = adjMetric
@@ -219,7 +208,7 @@ function initActions()
 			s.b:adj("enr",100)
 		end
 		function actions.bath()
-			s.b:adj("clm",100)
+			s.b:adj("sleepy",100)
 			s.p:adj("enr",-10)
 		end
 		function actions.sleepb()
@@ -297,9 +286,9 @@ function updateTimeBasedStats()
 	s.p:adj("clm",-10/ticsPerHour)
 	s.b:adj("enr",-50/ticsPerHour)
 	if s.b.asleep then
-		s.b:adj("clm", 30/ticsPerHour)
+		s.b:adj("sleepy", -30/ticsPerHour)
 	else
-		s.b:adj("clm", -20/ticsPerHour)
+		s.b:adj("sleepy", 20/ticsPerHour)
 		s.b:adj("brd", 30/ticsPerHour)
 	end
 end

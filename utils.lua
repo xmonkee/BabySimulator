@@ -1,3 +1,5 @@
+PALETTE_MAP = 0x3FF0
+
 function calcBloc(loc)
 	return {
 		x1=loc.x+(loc.lf or 0)*loc.sc,
@@ -7,15 +9,41 @@ function calcBloc(loc)
 	}
 end
 
-
 function _objDraw(self)
 	local loc = self.loc
 	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
 end
-
 
 function makeObj(loc)
 	local obj = {loc=loc,draw=_objDraw}
 	obj.bloc = calcBloc(obj.loc)
 	return obj
 end
+
+function withSwap(oldi, newi, f) -- Swap colors and do f()
+	-- oldi is the palette index of the color in the sprite to change
+	-- newi is the palette index of the color you want to swap in
+	local oldc = peek4(PALETTE_MAP*2+oldi) -- save the original color
+	local newc = peek4(PALETTE_MAP*2+newi) -- get the color at newi
+	poke4(PALETTE_MAP*2+oldi, newc) -- write new color at oldi
+	f() -- do the thing
+	poke4(PALETTE_MAP*2+oldi, oldc) -- restore oldcinal color at oldi
+end
+
+function collision(bloc1, bloc2)
+	local left,right = bloc1,bloc2
+	local up,down = bloc1,bloc2
+	if bloc1.x1 > bloc2.x1 then left,right = right,left end
+	if bloc1.y1 > bloc2.y1 then up,down = down,up end
+	if left.x2 < right.x1 then return false end
+	if up.y2 < down.y1 then return false end
+	return true
+end
+
+function anyCollisions(bloc, objs)
+	for _,obj in pairs(objs) do
+		if collision(bloc, obj.bloc) then return true end
+	end
+	return false
+end
+
