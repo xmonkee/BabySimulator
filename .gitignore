@@ -41,3 +41,6 @@ luac.out
 
 # Editors
 *.swp
+
+# tic80
+.local
