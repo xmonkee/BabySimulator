@@ -43,15 +43,20 @@ function initBaby()
 		self.loc.spr=self.loc.ospr
 	end
 
-	function baby.draw(self)
+	baby._draw = baby.draw -- original draw fn
+	function baby.draw(self, isActive)
 		local loc = self.loc
 		local flip = t//240%2
 		local function drawBaby()
-			spr(loc.spr,loc.x,loc.y,0,loc.sc,flip,0,loc.w,loc.h)
+			self:_draw(isActive)
 		end
 		local isRed = self:happ() <= 0 or
 			(self:happ() <= 20 and (t//20%2) == 0)
-		if isRed then withSwap(4,3,drawBaby) else drawBaby() end
+		if isRed then
+			withSwap(4,3,drawBaby)
+		else
+			self:_draw(isActive)
+		end
 
 		-- draw the poops
 		for i=1,self.props.poops do
@@ -68,7 +73,10 @@ function initBaby()
 end
 
 function initParent()
-	local parent = makeObj({x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,flip=0})
+	local parent = makeObj({
+		x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
+		flip=0,lf=6,rt=10,up=14,dn=16
+	})
 	parent.props = {enr=100, clm=100, hpy=100}
 
 	function parent.draw(self)
@@ -79,7 +87,7 @@ function initParent()
 	function parent.mv(self, dx, dy)
 		local l = self.loc
 		local x,y=l.x+dx,l.y+dy
-		local pbloc = {x1=x+6*l.sc,y1=y+14*l.sc,x2=x+10*l.sc,y2=y+16*l.sc}
+		local pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
 		if not anyCollisions(pbloc, objs) then
 			l.x=math.max(0, math.min(l.x+dx, 210))
 			l.y=math.max(10, math.min(l.y+dy, 100))
@@ -181,6 +189,7 @@ function initState()
 	s.g = {here=false,arrivedAt=0}
 	s.n = initNotifications()
 	s.go = false -- game over
+	s.activeObj = nil
 end
 
 function initActions()
@@ -337,16 +346,27 @@ function readKeys()
 	if btnp(5,60,5) and s.m.shown then s.m.shown=false end
 end
 
+function calcActiveObj()
+	s.activeObj = nil
+	local parentBloc = s.p:calcBloc()
+	for objName,obj in pairs(objs) do
+		if isAdjacent(obj.bloc, parentBloc) then
+			s.activeObj = objName
+		end
+	end
+end
+
 function update()
 	t=t+1
 	minute=(t/ticsPerMinute) % 60
 	hour=(t/ticsPerHour) % 24
 	animResets()
-	if s.go then return end
 	updateLiveliness()
+	if s.go then return end
 	updateTimeBasedStats()
-	updateEvents()
 	readKeys()
+	calcActiveObj()
+	updateEvents()
 end
 
 ---------------------------------------------------------------
@@ -402,11 +422,8 @@ function drawClock()
 end
 
 function drawObjs()
-	for _,obj in pairs(objs) do
-		obj:draw()
-		if isAdjacent(obj.bloc, s.p:calcBloc()) then
-			obj:draw(true)
-		end
+	for objName,obj in pairs(objs) do
+		obj:draw(objName == s.activeObj)
 	end
 end
 

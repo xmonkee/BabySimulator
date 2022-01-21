@@ -4,9 +4,9 @@ function calcBloc(obj)
 	local loc = obj.loc
 	return {
 		x1=loc.x+(loc.lf or 0)*loc.sc,
-		y1=loc.y,
+		y1=loc.y+(loc.up or 0)*loc.sc,
 		x2=loc.x+(loc.rt or loc.w*8)*loc.sc,
-		y2=loc.y+loc.h*loc.sc*8
+		y2=loc.y+(loc.dn or loc.h*8)*loc.sc
 	}
 end
 
@@ -14,7 +14,7 @@ function _objDraw(self, active)
 	local loc = self.loc
 	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
 	if active then
-		rect(loc.x-1,loc.y-1,loc.x+loc.w*loc.sc+1,loc.y+loc.h*loc.sc,5)
+		rectb(loc.x-1,loc.y-1,loc.w*loc.sc*8+1,loc.h*loc.sc*8+1,colors.label)
 	end
 end
 
