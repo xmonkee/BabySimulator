@@ -49,7 +49,8 @@ function initBaby()
 		local function drawBaby()
 			spr(loc.spr,loc.x,loc.y,0,loc.sc,flip,0,loc.w,loc.h)
 		end
-		local isRed = self.props.poops >= 2 and (t//20%2) == 0
+		local isRed = self:happ() <= 0 or
+			(self:happ() <= 20 and (t//20%2) == 0)
 		if isRed then withSwap(4,3,drawBaby) else drawBaby() end
 
 		-- draw the poops
@@ -396,13 +397,16 @@ function timestamp()
 end
 
 function drawClock()
-	spr(256,100,0,0)
-	sprint(timestamp(),110,1,colors.label)
+	spr(256,0,0,0)
+	sprint(timestamp(),10,1,colors.label)
 end
 
 function drawObjs()
 	for _,obj in pairs(objs) do
 		obj:draw()
+		if isAdjacent(obj.bloc, s.p:calcBloc()) then
+			obj:draw(true)
+		end
 	end
 end
 
@@ -428,7 +432,7 @@ function draw()
 	drawObjs()
 	s.p:draw()
 	drawMenu()
-	drawNotifications()
+	--drawNotifications()
 	drawGameOver()
 end
 

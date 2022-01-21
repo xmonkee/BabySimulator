@@ -1,6 +1,7 @@
 PALETTE_MAP = 0x3FF0
 
-function calcBloc(loc)
+function calcBloc(obj)
+	local loc = obj.loc
 	return {
 		x1=loc.x+(loc.lf or 0)*loc.sc,
 		y1=loc.y,
@@ -9,14 +10,18 @@ function calcBloc(loc)
 	}
 end
 
-function _objDraw(self)
+function _objDraw(self, active)
 	local loc = self.loc
 	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+	if active then
+		rect(loc.x-1,loc.y-1,loc.x+loc.w*loc.sc+1,loc.y+loc.h*loc.sc,5)
+	end
 end
 
 function makeObj(loc)
 	local obj = {loc=loc,draw=_objDraw}
-	obj.bloc = calcBloc(obj.loc)
+	obj.calcBloc = calcBloc
+	obj.bloc = obj:calcBloc() -- useful for static objects
 	return obj
 end
 
@@ -40,10 +45,21 @@ function collision(bloc1, bloc2)
 	return true
 end
 
+function isAdjacent(bloc1, bloc2)
+	-- technically adjacent OR overlapping,
+	-- but we assume overlap is avoided elsewhere
+	local left,right = bloc1,bloc2
+	local up,down = bloc1,bloc2
+	if bloc1.x1 > bloc2.x1 then left,right = right,left end
+	if bloc1.y1 > bloc2.y1 then up,down = down,up end
+	if left.x2 < right.x1-1 then return false end
+	if up.y2 < down.y1-1 then return false end
+	return true
+end
+
 function anyCollisions(bloc, objs)
 	for _,obj in pairs(objs) do
 		if collision(bloc, obj.bloc) then return true end
 	end
 	return false
 end
-
