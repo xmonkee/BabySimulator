@@ -12,10 +12,16 @@ end
 
 function _objDraw(self, active)
 	local loc = self.loc
-	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
 	if active then
-		rectb(loc.x-1,loc.y-1,loc.w*loc.sc*8+1,loc.h*loc.sc*8+1,colors.label)
+		--rectb(loc.x-1,loc.y-1,loc.w*loc.sc*8+1,loc.h*loc.sc*8+1,colors.label)
+		withSwapAll(12, function()
+			spr(loc.spr,loc.x-1,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x,loc.y-1,0,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x+1,loc.y,0,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x,loc.y+1,0,loc.sc,0,0,loc.w,loc.h)
+		end)
 	end
+	spr(loc.spr,loc.x,loc.y,0,loc.sc,0,0,loc.w,loc.h)
 end
 
 function makeObj(loc)
@@ -23,6 +29,21 @@ function makeObj(loc)
 	obj.calcBloc = calcBloc
 	obj.bloc = obj:calcBloc() -- useful for static objects
 	return obj
+end
+
+function withSwapAll(newi, f) -- Swap colors and do f()
+	-- newi is the palette index of the color you want to swap in
+	local oldc = {}
+	local newc = peek4(PALETTE_MAP*2+newi) -- get the color at newi
+	for i = 1,15 do
+		-- i is the palette index of the color in the sprite to change
+		oldc[i] = peek4(PALETTE_MAP*2+i) -- save the original color
+		poke4(PALETTE_MAP*2+i, newc) -- write new color at i
+	end
+		f() -- do the thing
+	for i = 1,15 do
+		poke4(PALETTE_MAP*2+i, oldc[i]) -- restore oldcinal color at i
+	end
 end
 
 function withSwap(oldi, newi, f) -- Swap colors and do f()
