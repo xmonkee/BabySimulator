@@ -77,7 +77,8 @@ function initParent()
 		x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
 		flip=0,lf=6,rt=10,up=14,dn=16
 	})
-	parent.props = {enr=100, clm=100, hpy=100}
+	parent.props = {enr=100, hpy=100}
+	parent.hand = nil
 
 	function parent.draw(self)
 		local l = self.loc
@@ -98,33 +99,6 @@ function initParent()
 
 	parent.adj = adjMetric
 	return parent
-end
-
-function initMenu()
-	local menu = {
-		shown=false,
-		items={
-			{"work", "Work"},
-			{"buyd", "Buy diapers"},
-			{"buyf", "Buy food"}, {"garb", "Put out garbage"},
-			{"changed", "Change diaper"},
-			{"cook", "Cook food"},
-			{"feed", "Feed baby"},
-			{"sleepb", "Sleep baby"},
-			{"play", "Play with baby"},
-			{"eat", "Eat a meal"},
-			{"sleep", "Take a nap"},
-			{"soc", "Socialize"}
-		},
-		selected=1,
-		inc=function(self)
-			self.selected = math.min(#self.items, self.selected+1)
-		end,
-		dec=function(self)
-			self.selected = math.max(1, self.selected-1)
-		end
-	}
-	return menu
 end
 
 function initResources()
@@ -184,9 +158,7 @@ function initState()
 	s = {}
 	s.b = initBaby()
 	s.p = initParent()
-	s.m = initMenu()
 	s.r = initResources()
-	s.g = {here=false,arrivedAt=0}
 	s.n = initNotifications()
 	s.go = false -- game over
 	s.activeObj = nil
@@ -237,11 +209,8 @@ function initActions()
 		function actions.eat()
 			s.p:adj("enr",50)
 		end
-		function actions.sleep()
-			s.p:adj("clm",100)
-		end
 		function actions.soc()
-			s.p:adj("hpy",50)
+			s.p:adj("enr",50)
 		end
 
 	for i,item in pairs(s.m.items) do
@@ -251,18 +220,50 @@ function initActions()
 	end
 end
 
+function initObjs()
+	objs = {}
+
+	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
+	objs.work.menu={"__empty"={{"work", "Work"}}}
+
+	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
+	objs.shelf.menu={
+		"__empty"={{"ingr", "Pick up ingredients"}},
+		"groc"={{"put_groc", "Put away groceries"}}}
+
+	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
+	objs.stove.menu={"ingr"={{"cook", "Cook food"}}}
+
+	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
+	objs.trash.menu={
+		"__empty"={{"take_garb", "Pick up garbage"}},
+		"diap"={{"put_diap", "Throw Diaper"}}}
+
+	objs.trash = makeObj({x=40,y=116,w=2,h=2,spr=274,sc=1})
+	objs.truck.menu={"trash"={{"throw_garb", "Put out garbage"}}},
+
+	objs.store = makeObj({x=10,y=50,w=2,h=2,spr=282,sc=2})
+	objs.store.menu={"__empty"={
+		{"buyd", "Buy diapers"},
+		{"buyf", "Buy food"},
+		{"soc", "Have a drink"}}
+	}
+
+	objs.baby = s.b
+	objs.baby.menu={
+		"__empty"={
+			{"changed", "Change diaper"},
+			{"sleepb", "Sleep baby"},
+			{"play", "Play with baby"}
+		},
+		"food"={{"feed", "Feed baby"}}}
+end
+
 function initEvents()
 	events = {}
 	function events.poop()
 		s.b:adj("poops",1)
 		s.b.poopedAt=t
-	end
-	function events.garbCome()
-		s.g.present=true
-		s.g.arrivedAt=t
-	end
-	function events.garbGo()
-		s.g.present=false
 	end
 	function events.babyWakeUp()
 		s.b:awake()
@@ -270,21 +271,13 @@ function initEvents()
 
 end
 
-function initObjs()
-	objs = {}
-	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
-	objs.groc = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
-	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-	objs.baby = s.b
-end
-
 function init()
 	initConstants()
 	initState()
 	initActions()
-	initEvents()
 	initObjs()
+	initMenu()
+	initEvents()
 end
 
 init()
@@ -302,7 +295,6 @@ end
 function updateTimeBasedStats()
 	s.p:adj("enr",-30/ticsPerHour)
 	s.p:adj("hpy",-10/ticsPerHour)
-	s.p:adj("clm",-10/ticsPerHour)
 	s.b:adj("enr",-50/ticsPerHour)
 	if s.b.asleep then
 		s.b:adj("sleepy", -30/ticsPerHour)
