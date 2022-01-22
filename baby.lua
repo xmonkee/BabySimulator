@@ -78,11 +78,24 @@ function initParent()
 		flip=0,lf=6,rt=10,up=14,dn=16
 	})
 	parent.props = {enr=100, hpy=100}
-	parent.hand = nil
+	parent._hand = nil
+	function parent.hold(self, item)
+		self._hand = item
+	end
+	function parent.drop(self, item)
+		self._hand = nil
+	end
 
 	function parent.draw(self)
 		local l = self.loc
 		spr(l.spr,l.x,l.y,0,l.sc,l.flip,0,l.w,l.h)
+	end
+
+	function parent.handleKeys(self)
+		if btn(0) then self:mv(0,-1) end
+		if btn(1) then self:mv(0, 1) end
+		if btn(2) then self:mv(-1,0) end
+		if btn(3) then self:mv( 1,0) end
 	end
 
 	function parent.mv(self, dx, dy)
@@ -104,7 +117,7 @@ end
 function initResources()
 	local resources = {
 		money=100,
-		food=100,
+		groc=100,
 		diap=10,
 		trash=0
 	}
@@ -118,145 +131,32 @@ function initResources()
 	return resources
 end
 
-function initNotifications()
-	local notifications = {first=nil, size=0, last=nil}
-	function notifications.push(self, notification)
-		self.size = self.size + 1
-		if self.first == nil then
-			self.first = {msg=notification,ts=timestamp()}
-			self.last = self.first
-		else
-			self.first = {
-				msg=notification,
-				ts=timestamp(),
-				nxt=self.first
-			}
-			self.first.nxt.prev=self.first
-		end
-		while self.size > 5 do
-			self.last = self.last.prev
-			self.last.nxt = nil
-			self.size = self.size - 1
-		end
-	end
-
-	function notifications.iter(self)
-		local curr = self.first
-		return function()
-			if curr ~= nil then
-				local ret = curr
-				curr = curr.nxt
-				return ret
-			end
-		end
-	end
-
-	return notifications
-end
-
 function initState()
 	s = {}
 	s.b = initBaby()
 	s.p = initParent()
 	s.r = initResources()
-	s.n = initNotifications()
 	s.go = false -- game over
 	s.activeObj = nil
-end
-
-function initActions()
-	actions = {}
-		function actions.work()
-			s.r.money = s.r.money + 20
-			s.p:adj("enr",-10)
-		end
-		function actions.buyd()
-			s.r:adj("money", -10)
-			s.r:adj("diap", 10)
-		end
-		function actions.buyf()
-			s.r:adj("food",30)
-			s.r:adj("money",-10)
-		end
-		function actions.garb()
-			s.r:adj("trash",-s.r.trash)
-		end
-		function actions.changed()
-			s.r:adj("diap",-1)
-			s.r:adj("trash",10)
-			s.b.props.poops=0
-		end
-		function actions.cook()
-			s.r:adj("food",-10)
-			s.r:adj("trash",20)
-			s.p:adj("enr",-10)
-		end
-		function actions.feed()
-			s.b:adj("enr",100)
-		end
-		function actions.bath()
-			s.b:adj("sleepy",100)
-			s.p:adj("enr",-10)
-		end
-		function actions.sleepb()
-			s.p:adj("enr",-20)
-			s.b:sleep()
-		end
-		function actions.play()
-			s.b:adj("brd",-30)
-			s.p:adj("enr",-10)
-		end
-		function actions.eat()
-			s.p:adj("enr",50)
-		end
-		function actions.soc()
-			s.p:adj("enr",50)
-		end
-
-	for i,item in pairs(s.m.items) do
-		if actions[item[1]] == nil then
-			error("action "..k.."not found")
-		end
-	end
+	s.mode = "normal"
 end
 
 function initObjs()
 	objs = {}
 
 	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
-	objs.work.menu={"__empty"={{"work", "Work"}}}
 
 	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-	objs.shelf.menu={
-		"__empty"={{"ingr", "Pick up ingredients"}},
-		"groc"={{"put_groc", "Put away groceries"}}}
 
 	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
-	objs.stove.menu={"ingr"={{"cook", "Cook food"}}}
 
 	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-	objs.trash.menu={
-		"__empty"={{"take_garb", "Pick up garbage"}},
-		"diap"={{"put_diap", "Throw Diaper"}}}
 
 	objs.trash = makeObj({x=40,y=116,w=2,h=2,spr=274,sc=1})
-	objs.truck.menu={"trash"={{"throw_garb", "Put out garbage"}}},
 
 	objs.store = makeObj({x=10,y=50,w=2,h=2,spr=282,sc=2})
-	objs.store.menu={"__empty"={
-		{"buyd", "Buy diapers"},
-		{"buyf", "Buy food"},
-		{"soc", "Have a drink"}}
-	}
 
 	objs.baby = s.b
-	objs.baby.menu={
-		"__empty"={
-			{"changed", "Change diaper"},
-			{"sleepb", "Sleep baby"},
-			{"play", "Play with baby"}
-		},
-		"food"={{"feed", "Feed baby"}}}
 end
 
 function initEvents()
@@ -306,7 +206,7 @@ end
 
 function fireEvent(event, notification)
 	event()
-	s.n:push(notification)
+	s.n = notification
 end
 
 function updateEvents()
@@ -321,21 +221,11 @@ function updateEvents()
 end
 
 function readKeys()
-	if s.m.shown then
-		if btnp(0,60,5) then s.m:dec() end
-		if btnp(1,60,5) then s.m:inc() end
-		if btnp(4,60,5) then
-			actions[s.m.items[s.m.selected][1]]()
-			s.m.shown=false
-		end
-	else
-		if btn(0) then s.p:mv(0,-1) end
-		if btn(1) then s.p:mv(0, 1) end
-		if btn(2) then s.p:mv(-1,0) end
-		if btn(3) then s.p:mv( 1,0) end
+	if s.mode == "menu" then
+		local returnControl = s.menu.handleKeys()
+		if not returnControl then return end
 	end
-	if btnp(4,60,5) and not s.m.shown then s.m.shown=true end
-	if btnp(5,60,5) and s.m.shown then s.m.shown=false end
+	s.p:handleKeys()
 end
 
 function calcActiveObj()
@@ -368,38 +258,6 @@ function sprint(msg,x,y,color)
 	return print(msg,x,y,color,true,1,true)
 end
 
-function drawMenu()
-	if not s.m.shown then return end
-	function drawItem(item,x,y,selected)
-		local color = colors.menuItem
-		if selected then color = colors.selectedMenuItem end
-		rect(x,y,61,10,color)
-		sprint(item[2],x+1,y+1,colors.menuItemText)
-	end
-	local x=130
-	local ys=10
-	for i,item in pairs(s.m.items) do
-		local y=ys+i*8
-		drawItem(item, x, y,s.m.selected==i)
-	end
-end
-
-function drawMeter(person, label, startx, starty)
-	print(label, startx, starty, colors.label)
-	for i,field in pairs(person.meterFields) do
-		local x=startx
-		local y = starty + (i)*8
-		x = x + sprint(labels[field],x,y,colors.label) + 1
-		rectb(x,y,24,7,colors.label)
-		rect(x+2,y+2,person[field]/20*4,3, colors.meter)
-	end
-end
-
-function drawMeters()
-	drawMeter(s.b, "Baby", 0, 0)
-	drawMeter(s.p, "Mom", 0, 35)
-end
-
 function timestamp()
 	return string.format(
 		"%.2d:%.2d",
@@ -419,14 +277,6 @@ function drawObjs()
 	end
 end
 
-function drawNotifications()
-	local x,y = 100,50
-	for item in s.n:iter() do
-		sprint(item.ts.." "..item.msg,x,y,5)
-		y=y+8
-	end
-end
-
 function drawGameOver()
 	if s.go then
 		rect(80,52,80,40,0)
@@ -440,7 +290,9 @@ function draw()
 	drawClock()
 	drawObjs()
 	s.p:draw()
-	drawMenu()
+	if s.mode == menu then
+		s.menu:draw()
+	end
 	--drawNotifications()
 	drawGameOver()
 end
