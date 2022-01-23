@@ -79,6 +79,12 @@ function initParent()
 	})
 	parent.props = {enr=100, hpy=100}
 	parent._hand = nil
+	function parent.emptyHanded(self)
+		--trace("hand")
+		--trace(self._hand)
+		--trace(self._hand == nil)
+		return self._hand == nil
+	end
 	function parent.hold(self, item)
 		self._hand = item
 	end
@@ -159,6 +165,28 @@ function initObjs()
 	objs.baby = s.b
 end
 
+function initTriggers()
+
+	local emptyHand = function()
+		return s.p:emptyHanded()
+	end
+
+	local activeObj = function(obj)
+		return function()
+			return obj == s.activeObj
+		end
+	end
+
+	triggers = {}
+	triggers.play = Trigger{
+		name="play",
+		obj=objs.baby,
+		conds={emptyHand,activeObj(objs.baby)},
+		action=Action("Play", 1, function() s.b:adj("brd",-10) end)
+	}
+
+end
+
 function initEvents()
 	events = {}
 	function events.poop()
@@ -168,15 +196,13 @@ function initEvents()
 	function events.babyWakeUp()
 		s.b:awake()
 	end
-
 end
 
 function init()
 	initConstants()
 	initState()
-	initActions()
 	initObjs()
-	initMenu()
+	initTriggers()
 	initEvents()
 end
 
@@ -220,7 +246,7 @@ function updateEvents()
 	end
 end
 
-function readKeys()
+function handleKeys()
 	if s.mode == "menu" then
 		local returnControl = s.menu.handleKeys()
 		if not returnControl then return end
@@ -233,9 +259,19 @@ function calcActiveObj()
 	local parentBloc = s.p:calcBloc()
 	for objName,obj in pairs(objs) do
 		if isAdjacent(obj.bloc, parentBloc) then
-			s.activeObj = objName
+			s.activeObj = obj
 		end
 	end
+end
+
+function calcTriggers()
+	local menu = Menu:new()
+	for tname, trigger in pairs(triggers) do
+		if trigger:triggered() then
+			menu:add(trigger.action)
+		end
+	end
+	menu:activate()
 end
 
 function update()
@@ -246,8 +282,9 @@ function update()
 	updateLiveliness()
 	if s.go then return end
 	updateTimeBasedStats()
-	readKeys()
+	handleKeys()
 	calcActiveObj()
+	calcTriggers()
 	updateEvents()
 end
 
@@ -273,7 +310,7 @@ end
 
 function drawObjs()
 	for objName,obj in pairs(objs) do
-		obj:draw(objName == s.activeObj)
+		obj:draw(obj == s.activeObj)
 	end
 end
 

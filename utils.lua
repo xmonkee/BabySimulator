@@ -1,3 +1,5 @@
+require "menu"
+
 PALETTE_MAP = 0x3FF0
 
 function calcBloc(obj)
@@ -85,102 +87,22 @@ function anyCollisions(bloc, objs)
 	return false
 end
 
-function Menu(actions)
-	-- modes = shown | selected | started
-	-- shown + z -> selected
-	-- selected + x -> shown
-	-- selected + z -> started
-	-- started + z(hold) -> progressing
-	-- progressing == 100 = action() -> selected
-	-- for single item
-	-- shown + z -> started
-	local menu = {actions=actions,selected=1, mode="shown"}
 
-	function menu.activate(self)
-		s.mode = "menu"
-		s.menu = self
-		self.mode = "shown"
-	end
-
-	function menu.incSel(self)
-		self.selected = math.min(#self.actions, self.selected + 1)
-	end
-
-	function menu.decSel(self)
-		self.selected = math.max(1 self.selected - 1)
-	end
-
-	local function drawLabel(label,x,y,selected,progress)
-		local color = colors.menuItem
-		if selected then color = colors.selectedMenuItem end
-		rect(x,y,62,10,color)
-		rect(x+1,y+1,60/100*progress,8,5)
-		sprint(label, x+1,y+1,colors.menuItemText)
-	end
-
-	function menu.draw(self):
-		local x=130
-		local ys=10
-		for i,action in pairs(s.actions) do
-			local y=ys+i*8
-			drawLabel(action.label,x,y,self.selected==i, self.progress)
-		end
-	end
-
-	function menu.handleKeys(self)
-		local returnControl = false -- return indicating if caller can process other keystrokes
-		if self.mode == "shown" then
-			returnControl = true
-			if btnp(4,60,5) then
-				if #self.actions == 1 then
-					self.mode = "started"
-					self.progress = 0
-				else
-					self.mode = "selected"
-				end
-			end
-		end
-		if self.mode == "selected" then
-			if btnp(0,10,5) then self:decSel() end
-			if btnp(1,10,5) then self:incSel() end
-			if btnp(4,60,5) then
-				self.mode = "started"
-				self.progress = 0
-			end
-			if btnp(5,60,5) then self.mode = "shown" end
-		end
-		if self.mode == "started" then
-			if self.progress == 100 then
-				self.actions[self.selected].fire()
-				self.progress = 0
-				self.mode = "selected"
-			elseif not btn(4) or btn(1) or btn(2) or btn(3) or btn(5) then
-				self.mode = "selected"
-				self.progress = 0
-			else -- only btn(4)
-				self.progress = self.progress + self.actions[self.selected].rate
-			end
-		end
-		return returnControl
-	end
-
+function Action(label, rate, fn)
+	local action = {label=label, rate=rate,fn=fn}
+	return action
 end
 
-function Action(label, rate, fire)
-	action = {label=label, rate=rate,fire=fire}
+function _triggered(self)
+	for _, cond in pairs(self.conds) do
+		trace(cond())
+		if not cond() then return false end
+	end
+	return true
 end
 
-function Trigger(name, obj, conds, action)
-	t={name=name,obj=obj,conds=conds or {},action=action}
-
-	function trigger.check()
-		if t.obj and s.activeObj != t.obj then
-			return false
-		end
-		for _, cond in pairs(conds) do
-			if not cond() then return false end
-		end
-		return true
-	end
-
+function Trigger(triggerArgs)
+	local t=triggerArgs --{name, conds, action}
+	t.triggered = _triggered
+	return t
 end
