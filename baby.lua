@@ -12,12 +12,19 @@ function initConstants()
 		textShadow=0,
 	}
 	handSprs = {
-		ingr={spr=370,sc=1},
-		diap={spr=371,s=1}
+		ingr={spr=370,s=1},
+		diap={spr=371,s=1},
+		fdiap={spr=272,s=1},
+		groc={spr=276,s=2},
+		diaps={spr=371,s=2}
 	}
 	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
+
+	maxTrash = 1
+	maxPoops = 3
+	costs = {diaps=30,groc=50}
 end
 
 function adjMetric(self,metric,val)
@@ -32,7 +39,7 @@ function initBaby()
 
 	function baby.happ(self)
 		local p = self.props
-		return ((p.enr/100) * (100-p.brd)/100 * (3-p.poops)/3 * (100-p.sleepy)/100)*100
+		return ((p.enr/100) * (100-p.brd)/100 * (maxPoops-p.poops)/maxPoops * (100-p.sleepy)/100)*100
 	end
 
 	baby.asleep=false
@@ -167,7 +174,7 @@ function initObjs()
 	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
 	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
 	objs.stove = makeObj({x=100,y=15,w=2,h=2,spr=284,sc=2})
-	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1,zero=15})
+	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
 	objs.store = makeObj({x=10,y=65,w=4,h=4,spr=400,sc=1})
 	objs.baby = s.b
 end
@@ -180,6 +187,12 @@ function initTriggers()
 
 	local notEmptyHand = function()
 		return not s.p:emptyHanded()
+	end
+
+	local holding = function(thing)
+		return function()
+			return s.p:isHolding(thing)
+		end
 	end
 
 	local resAbove = function(res, lvl)
@@ -208,27 +221,30 @@ function initTriggers()
 		Trigger{
 			name="takeDiap",
 			conds={emptyHand,resAbove(s.r.groc,0)},
-			action=Action("Take Diaper", 1, function()
+			action=Action("Take diaper", 1, function()
 				s.r.diap = s.r.diap - 1
 				s.p:hold("diap")
 			end)
 		}, Trigger{
 			name="takeIngr",
 			conds={emptyHand,resAbove(s.r.diap,0)},
-			action=Action("Take Ingredients", 1, function()
+			action=Action("Take ingredients", 1, function()
 				s.r.groc = s.r.groc - 1
 				s.p:hold("ingr")
 			end)
-		}
-	}
-
-	triggers.trash = {
-		Trigger{
-			name="throw",
-			conds={notEmptyHand, resBelow(s.r.trash, 10)},
-			action=Action("Throw", 2, function()
+		}, Trigger{
+			name="storeGrocs",
+			conds={holding("groc"),resAbove(s.r.diap,0)},
+			action=Action("Store groceries", 1, function()
+				s.r.groc = s.r.groc + 3
 				s.p:drop()
-				s.r.trash = s.r.trash + 1
+			end)
+		}, Trigger{
+			name="storeDiaps",
+			conds={holding("diaps"),resAbove(s.r.diap,0)},
+			action=Action("Store diapers", 1, function()
+				s.r.diap = s.r.diap + 4
+				s.p:drop()
 			end)
 		}
 	}
@@ -236,13 +252,32 @@ function initTriggers()
 	triggers.trash = {
 		Trigger{
 			name="throw",
-			conds={notEmptyHand, resBelow(s.r.trash, 10)},
+			conds={notEmptyHand},
 			action=Action("Throw", 2, function()
 				s.p:drop()
 				s.r.trash = s.r.trash + 1
 			end)
 		}
 	}
+
+	triggers.store = {
+		Trigger{
+			name="buyDiaps",
+			conds={emptyHand, resAbove(s.r.money,costs.diaps)},
+			action=Action("Buy diapers", 2, function()
+				s.p:hold("diaps")
+				s.r.money = s.r.money - costs.diaps
+			end)
+		}, Trigger{
+			name="buyGroc",
+			conds={emptyHand, resAbove(s.r.money,costs.groc)},
+			action=Action("Buy groceries", 2, function()
+				s.p:hold("groc")
+				s.r.money = s.r.money - costs.groc
+			end)
+		}
+	}
+
 end
 
 function initEvents()
@@ -273,7 +308,14 @@ function animResets()
 end
 
 function updateLiveliness()
-	if s.b:happ() <= 0 then s.go = true end
+	if s.b:happ() <= 0 then 
+		s.go = true
+		notify("Baby got too sad")
+	end
+	if s.r.trash > maxTrash then 
+		s.go = true
+		notify("Trash got too full")
+	end
 end
 
 function updateTimeBasedStats()
@@ -288,14 +330,18 @@ function updateTimeBasedStats()
 	end
 end
 
-function fireEvent(event, notification)
-	event()
+function notify(notification)
 	s.notification = notification
 	s.notificationAt = t
 end
 
+function fireEvent(event, notification)
+	event()
+	notify(notification)
+end
+
 function updateEvents()
-	if math.random() < 100/(3*ticsPerHour) then
+	if math.random() < 1/(3*ticsPerHour) then
 		fireEvent(events.poop, "Baby Pooped")
 	end
 	if math.random() < 1/(3*ticsPerHour) then
@@ -395,7 +441,8 @@ function drawNotifications()
 	if s.notification and
 		s.notificationAt and
 		(t-s.notificationAt) < 120 then
-		sprint(s.notification, 100,60,5)
+		rect(0,0,240,10,0)
+		sprint(s.notification, 120-string.len(s.notification)/2*4,2,5)
 	end
 end
 
