@@ -34,15 +34,15 @@ function Menu.drawLabel(self,label,x,y,selected)
 		rect(x,y,w+1,h+1,0)
 		rect(x-1,y-1,w,h,colors.menuItemSelected)
 		rect(x-1,y-1,w/100*self.progress,h,colors.menuItemProgress)
-		sprint(label, x,y,colors.menuItemText)
+		print(label, x,y,colors.menuItemText, false, 1, true)
 	else
 		rect(x,y,w,h,color)
-		sprint(label, x+1,y+1,colors.menuItemText)
+		print(label, x+1,y+1,colors.menuItemText, false, 1, true)
 	end
 end
 
 function Menu.draw(self)
-	local x=math.min(s.p.loc.x,175)
+	local x=math.min(s.p.loc.x,168)
 	local ys=s.p.loc.y-(#self.actions*8)-2
 	if ys < 0 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
 	for i,action in pairs(self.actions) do

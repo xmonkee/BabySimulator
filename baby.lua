@@ -170,12 +170,6 @@ function initTriggers()
 		return s.p:emptyHanded()
 	end
 
-	local activeObj = function(obj)
-		return function()
-			return obj == s.activeObj
-		end
-	end
-
 	local resAbove = function(res, lvl)
 		return function()
 			return res > lvl
@@ -183,32 +177,33 @@ function initTriggers()
 	end
 
 	triggers = {}
-	triggers.play = Trigger{
-		name="play",
-		obj=objs.baby,
-		conds={emptyHand,activeObj(objs.baby)},
-		action=Action("Play", 1, function() s.b:adj("brd",-10) end)
-	}
 
-	triggers.takeDiap = Trigger{
-		name="takeDiap",
-		obj=objs.shelf,
-		conds={emptyHand,activeObj(objs.shelf),resAbove(s.r.groc,0)},
-		action=Action("Take Diaper", 1, function()
-			s.r.diap = s.r.diap - 1
-			s.p.hold("diap")
-		end)
-	}
+	triggers.baby = {
+		Trigger{
+			name="play",
+			obj=objs.baby,
+			conds={emptyHand},
+			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
+		}}
 
-	triggers.takeIngr = Trigger{
-		name="takeIngr",
-		obj=objs.shelf,
-		conds={emptyHand,activeObj(objs.shelf), resAbove(s.r.diap,0)},
-		action=Action("Take Ingredients", 1, function()
-			s.r.groc = s.r.groc - 1
-			s.p.hold("ingr")
-		end)
-	}
+		triggers.shelf = {
+			Trigger{
+				name="takeDiap",
+				obj=objs.shelf,
+				conds={emptyHand,resAbove(s.r.groc,0)},
+				action=Action("Take Diaper", 1, function()
+					s.r.diap = s.r.diap - 1
+					s.p:hold("diap")
+				end)
+			}, Trigger{
+				name="takeIngr",
+				obj=objs.shelf,
+				conds={emptyHand,resAbove(s.r.diap,0)},
+				action=Action("Take Ingredients", 1, function()
+					s.r.groc = s.r.groc - 1
+					s.p:hold("ingr")
+				end)
+			}}
 
 end
 
@@ -286,21 +281,20 @@ function calcActiveObj()
 	local parentBloc = s.p:calcBloc()
 	for objName,obj in pairs(objs) do
 		if isAdjacent(obj.bloc, parentBloc) then
-			s.activeObj = obj
+			s.activeObj = objName
 		end
 	end
-
 	s.activeChanged = s.activeObj ~= prevActive
 end
 
 function calcTriggers()
 	if not s.activeChanged then return end
-	if s.activeObj == nil then
+	if s.activeObj == nil or triggers[s.activeObj] == nil then
 		s.mode = "normal"
 		s.menu = nil
 	else
 		local menu = Menu:new()
-		for tname, trigger in pairs(triggers) do
+		for tname, trigger in pairs(triggers[s.activeObj]) do
 			if trigger:triggered() then
 				menu:add(trigger.action)
 			end
@@ -308,6 +302,9 @@ function calcTriggers()
 		if #menu.actions > 0 then
 			s.mode = "menu"
 			s.menu = menu
+		else
+			s.mode = "normal"
+			s.menu = nil
 		end
 	end
 end
@@ -348,7 +345,7 @@ end
 
 function drawObjs()
 	for objName,obj in pairs(objs) do
-		obj:draw(obj == s.activeObj)
+		obj:draw(objName == s.activeObj)
 	end
 end
 
