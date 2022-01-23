@@ -5,7 +5,6 @@ function initConstants()
 	colors={
 		label=12,
 		meter=5,
-		background=15,
 		menuItem=10,
 		menuItemSelected=9,
 		menuItemText=12,
@@ -167,9 +166,9 @@ function initObjs()
 	objs = {}
 	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
 	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
-	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-	objs.store = makeObj({x=0,y=56,w=4,h=4,spr=400,sc=1})
+	objs.stove = makeObj({x=100,y=15,w=2,h=2,spr=284,sc=2})
+	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1,zero=15})
+	objs.store = makeObj({x=10,y=65,w=4,h=4,spr=400,sc=1})
 	objs.baby = s.b
 end
 
@@ -233,6 +232,17 @@ function initTriggers()
 			end)
 		}
 	}
+
+	triggers.trash = {
+		Trigger{
+			name="throw",
+			conds={notEmptyHand, resBelow(s.r.trash, 10)},
+			action=Action("Throw", 2, function()
+				s.p:drop()
+				s.r.trash = s.r.trash + 1
+			end)
+		}
+	}
 end
 
 function initEvents()
@@ -280,11 +290,12 @@ end
 
 function fireEvent(event, notification)
 	event()
-	s.n = notification
+	s.notification = notification
+	s.notificationAt = t
 end
 
 function updateEvents()
-	if math.random() < 1/(3*ticsPerHour) then
+	if math.random() < 100/(3*ticsPerHour) then
 		fireEvent(events.poop, "Baby Pooped")
 	end
 	if math.random() < 1/(3*ticsPerHour) then
@@ -380,6 +391,14 @@ function drawObjs()
 	end
 end
 
+function drawNotifications()
+	if s.notification and
+		s.notificationAt and
+		(t-s.notificationAt) < 120 then
+		sprint(s.notification, 100,60,5)
+	end
+end
+
 function drawGameOver()
 	if s.go then
 		rect(80,52,80,40,0)
@@ -406,9 +425,9 @@ function draw()
 	if s.mode == "menu" then
 		s.menu:draw()
 	end
-	--drawNotifications()
+	drawNotifications()
 	drawGameOver()
-	drawFps()
+	--drawFps()
 end
 
 ------------------------------------------------------------------
