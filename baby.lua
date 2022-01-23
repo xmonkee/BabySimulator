@@ -12,6 +12,10 @@ function initConstants()
 		menuItemProgress=6,
 		textShadow=0,
 	}
+	handSprs = {
+		ingr={spr=370,sc=1},
+		diap={spr=371,s=1}
+	}
 	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
@@ -89,10 +93,23 @@ function initParent()
 	function parent.drop(self, item)
 		self._hand = nil
 	end
+	function parent.isHolding(self, item)
+		return self._hand == item
+	end
+	function parent.handSpr(self)
+		if self:emptyHanded() then return nil end
+		return handSprs[self._hand]
+	end
 
 	function parent.draw(self)
 		local l = self.loc
 		spr(l.spr,l.x,l.y,0,l.sc,l.flip,0,l.w,l.h)
+		local hspr = self:handSpr()
+		if hspr then
+			local x = l.x + 23
+			if l.flip==1 then x = l.x+1 end
+			spr(hspr.spr,x,l.y+10,15,1,0,0,hspr.s,hspr.s)
+		end
 	end
 
 	function parent.handleKeys(self)
@@ -142,7 +159,7 @@ function initState()
 	s.r = initResources()
 	s.go = false -- game over
 	s.activeObj = nil
-	s.activeChanged = true
+	s.recalcTrigs = true
 	s.mode = "normal"
 end
 
@@ -152,8 +169,7 @@ function initObjs()
 	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
 	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
 	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-	objs.trash = makeObj({x=40,y=116,w=2,h=2,spr=274,sc=1})
-	objs.store = makeObj({x=10,y=50,w=2,h=2,spr=282,sc=2})
+	objs.store = makeObj({x=0,y=56,w=4,h=4,spr=400,sc=1})
 	objs.baby = s.b
 end
 
@@ -163,9 +179,19 @@ function initTriggers()
 		return s.p:emptyHanded()
 	end
 
+	local notEmptyHand = function()
+		return not s.p:emptyHanded()
+	end
+
 	local resAbove = function(res, lvl)
 		return function()
 			return res > lvl
+		end
+	end
+
+	local resBelow = function(res, lvl)
+		return function()
+			return res <= lvl
 		end
 	end
 
@@ -174,7 +200,6 @@ function initTriggers()
 	triggers.baby = {
 		Trigger{
 			name="play",
-			obj=objs.baby,
 			conds={emptyHand},
 			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
 		}
@@ -183,7 +208,6 @@ function initTriggers()
 	triggers.shelf = {
 		Trigger{
 			name="takeDiap",
-			obj=objs.shelf,
 			conds={emptyHand,resAbove(s.r.groc,0)},
 			action=Action("Take Diaper", 1, function()
 				s.r.diap = s.r.diap - 1
@@ -191,11 +215,21 @@ function initTriggers()
 			end)
 		}, Trigger{
 			name="takeIngr",
-			obj=objs.shelf,
 			conds={emptyHand,resAbove(s.r.diap,0)},
 			action=Action("Take Ingredients", 1, function()
 				s.r.groc = s.r.groc - 1
 				s.p:hold("ingr")
+			end)
+		}
+	}
+
+	triggers.trash = {
+		Trigger{
+			name="throw",
+			conds={notEmptyHand, resBelow(s.r.trash, 10)},
+			action=Action("Throw", 2, function()
+				s.p:drop()
+				s.r.trash = s.r.trash + 1
 			end)
 		}
 	}
@@ -278,11 +312,13 @@ function calcActiveObj()
 			s.activeObj = objName
 		end
 	end
-	s.activeChanged = s.activeObj ~= prevActive
+	if s.activeObj ~= prevActive then
+		s.recalcTrigs = true
+	end
 end
 
 function calcTriggers()
-	if not s.activeChanged then return end
+	if not s.recalcTrigs then return end
 	if s.activeObj == nil or triggers[s.activeObj] == nil then
 		s.mode = "normal"
 		s.menu = nil
@@ -301,6 +337,7 @@ function calcTriggers()
 			s.menu = nil
 		end
 	end
+	s.recalcTrigs = false
 end
 
 function update()

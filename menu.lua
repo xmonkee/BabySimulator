@@ -67,13 +67,16 @@ function Menu.handleKeys(self)
 		else
 			if btnp(0,10,5) then self:decSel() end
 			if btnp(1,10,5) then self:incSel() end
-			if btnp(5,10,5) then self.mode = "shown" end
+			if btnp(2,10,5) or btnp(3,10,5) or btnp(5,10,5) then
+				self.mode = "shown"
+			end
 		end
 	elseif self.mode == "started" then
-		if self.progress == 100 then
+		if self.progress >= 100 then
 			self.actions[self.selected].fn()
 			self.progress = 0
 			self.mode = "selected"
+			s.recalcTrigs = true
 		elseif not btn(4) or btn(1) or btn(2) or btn(3) or btn(5) then
 			self.mode = "selected"
 			self.progress = 0
