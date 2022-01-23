@@ -7,7 +7,7 @@ function initConstants()
 		meter=5,
 		background=15,
 		menuItem=10,
-		selectedMenuItem=9,
+		menuItemSelected=9,
 		menuItemText=12,
 		menuItemProgress=6,
 		textShadow=0,
@@ -359,6 +359,16 @@ function drawGameOver()
 	end
 end
 
+function drawFps()
+	local ts = tstamp()
+	if ts ~= pts then
+		fps = (t - (tst or 0))
+		pts = ts
+		tst = t
+	end
+	print(fps, 100, 0, 5)
+end
+
 function draw()
 	cls()
   map()
@@ -370,6 +380,7 @@ function draw()
 	end
 	--drawNotifications()
 	drawGameOver()
+	drawFps()
 end
 
 ------------------------------------------------------------------

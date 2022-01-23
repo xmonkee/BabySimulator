@@ -29,15 +29,22 @@ end
 
 function Menu.drawLabel(self,label,x,y,selected)
 	local color = colors.menuItem
-	if selected then color = colors.selectedMenuItem end
-	rect(x,y,62,8,color)
-	rect(x,y,62/100*self.progress,8,colors.menuItemProgress)
-	sprint(label, x+1,y+1,colors.menuItemText)
+	local w,h = 70,8
+	if selected then
+		rect(x,y,w+1,h+1,0)
+		rect(x-1,y-1,w,h,colors.menuItemSelected)
+		rect(x-1,y-1,w/100*self.progress,h,colors.menuItemProgress)
+		sprint(label, x,y,colors.menuItemText)
+	else
+		rect(x,y,w,h,color)
+		sprint(label, x+1,y+1,colors.menuItemText)
+	end
 end
 
 function Menu.draw(self)
 	local x=math.min(s.p.loc.x,175)
 	local ys=s.p.loc.y-(#self.actions*8)-2
+	if ys < 0 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
 	for i,action in pairs(self.actions) do
 		local y=ys+(i-1)*8
 		self:drawLabel(action.label,x,y,self.selected==i)
