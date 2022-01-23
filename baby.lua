@@ -148,19 +148,12 @@ end
 
 function initObjs()
 	objs = {}
-
 	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
-
 	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-
 	objs.stove = makeObj({x=110,y=15,w=2,h=2,spr=284,sc=2})
-
 	objs.trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-
 	objs.trash = makeObj({x=40,y=116,w=2,h=2,spr=274,sc=1})
-
 	objs.store = makeObj({x=10,y=50,w=2,h=2,spr=282,sc=2})
-
 	objs.baby = s.b
 end
 
@@ -204,7 +197,6 @@ function initTriggers()
 					s.p:hold("ingr")
 				end)
 			}}
-
 end
 
 function initEvents()

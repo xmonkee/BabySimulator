@@ -47,15 +47,14 @@ function Menu.draw(self)
 	if ys < 0 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
 	for i,action in pairs(self.actions) do
 		local y=ys+(i-1)*8
-		self:drawLabel(action.label,x,y,self.selected==i)
+		self:drawLabel(action.label,x,y,self.mode ~= "shown" and self.selected==i)
 	end
 end
 
 function Menu.handleKeys(self)
-	local returnControl = false -- return indicating if caller can process other keystrokes
+	-- return boolean indicating if caller can process other keystrokes
 	if self.mode == "shown" then
-		returnControl = true
-		if #self.actions == 1 and btn(4) then
+		if #self.actions == 1 and btnp(4,10,5) then
 			self.mode = "started"
 			self.progress = 1
 		elseif btnp(4,10,5) then
@@ -82,5 +81,5 @@ function Menu.handleKeys(self)
 			self.progress = self.progress + self.actions[self.selected].rate
 		end
 	end
-	return returnControl
+	return self.mode == "shown" or #self.actions == 1
 end
