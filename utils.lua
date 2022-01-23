@@ -95,7 +95,6 @@ end
 
 function _triggered(self)
 	for _, cond in pairs(self.conds) do
-		trace(cond())
 		if not cond() then return false end
 	end
 	return true

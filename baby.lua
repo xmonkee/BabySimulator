@@ -9,9 +9,10 @@ function initConstants()
 		menuItem=10,
 		selectedMenuItem=9,
 		menuItemText=12,
+		menuItemProgress=6,
 		textShadow=0,
 	}
-	ticsPerSecond=0.3 --actually it's 60, game is sped up by 60x
+	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
 end
@@ -80,9 +81,6 @@ function initParent()
 	parent.props = {enr=100, hpy=100}
 	parent._hand = nil
 	function parent.emptyHanded(self)
-		--trace("hand")
-		--trace(self._hand)
-		--trace(self._hand == nil)
 		return self._hand == nil
 	end
 	function parent.hold(self, item)
@@ -123,7 +121,7 @@ end
 function initResources()
 	local resources = {
 		money=100,
-		groc=100,
+		groc=3,
 		diap=10,
 		trash=0
 	}
@@ -144,6 +142,7 @@ function initState()
 	s.r = initResources()
 	s.go = false -- game over
 	s.activeObj = nil
+	s.activeChanged = true
 	s.mode = "normal"
 end
 
@@ -177,12 +176,38 @@ function initTriggers()
 		end
 	end
 
+	local resAbove = function(res, lvl)
+		return function()
+			return res > lvl
+		end
+	end
+
 	triggers = {}
 	triggers.play = Trigger{
 		name="play",
 		obj=objs.baby,
 		conds={emptyHand,activeObj(objs.baby)},
 		action=Action("Play", 1, function() s.b:adj("brd",-10) end)
+	}
+
+	triggers.takeDiap = Trigger{
+		name="takeDiap",
+		obj=objs.shelf,
+		conds={emptyHand,activeObj(objs.shelf),resAbove(s.r.groc,0)},
+		action=Action("Take Diaper", 1, function()
+			s.r.diap = s.r.diap - 1
+			s.p.hold("diap")
+		end)
+	}
+
+	triggers.takeIngr = Trigger{
+		name="takeIngr",
+		obj=objs.shelf,
+		conds={emptyHand,activeObj(objs.shelf), resAbove(s.r.diap,0)},
+		action=Action("Take Ingredients", 1, function()
+			s.r.groc = s.r.groc - 1
+			s.p.hold("ingr")
+		end)
 	}
 
 end
@@ -236,7 +261,7 @@ function fireEvent(event, notification)
 end
 
 function updateEvents()
-	if math.random() < 10/(3*ticsPerHour) then
+	if math.random() < 1/(3*ticsPerHour) then
 		fireEvent(events.poop, "Baby Pooped")
 	end
 	if math.random() < 1/(3*ticsPerHour) then
@@ -248,13 +273,15 @@ end
 
 function handleKeys()
 	if s.mode == "menu" then
-		local returnControl = s.menu.handleKeys()
+		local returnControl = s.menu:handleKeys()
 		if not returnControl then return end
 	end
 	s.p:handleKeys()
 end
 
 function calcActiveObj()
+	local prevActive = s.activeObj
+
 	s.activeObj = nil
 	local parentBloc = s.p:calcBloc()
 	for objName,obj in pairs(objs) do
@@ -262,16 +289,27 @@ function calcActiveObj()
 			s.activeObj = obj
 		end
 	end
+
+	s.activeChanged = s.activeObj ~= prevActive
 end
 
 function calcTriggers()
-	local menu = Menu:new()
-	for tname, trigger in pairs(triggers) do
-		if trigger:triggered() then
-			menu:add(trigger.action)
+	if not s.activeChanged then return end
+	if s.activeObj == nil then
+		s.mode = "normal"
+		s.menu = nil
+	else
+		local menu = Menu:new()
+		for tname, trigger in pairs(triggers) do
+			if trigger:triggered() then
+				menu:add(trigger.action)
+			end
+		end
+		if #menu.actions > 0 then
+			s.mode = "menu"
+			s.menu = menu
 		end
 	end
-	menu:activate()
 end
 
 function update()
@@ -282,9 +320,9 @@ function update()
 	updateLiveliness()
 	if s.go then return end
 	updateTimeBasedStats()
-	handleKeys()
 	calcActiveObj()
 	calcTriggers()
+	handleKeys()
 	updateEvents()
 end
 
@@ -327,7 +365,7 @@ function draw()
 	drawClock()
 	drawObjs()
 	s.p:draw()
-	if s.mode == menu then
+	if s.mode == "menu" then
 		s.menu:draw()
 	end
 	--drawNotifications()
