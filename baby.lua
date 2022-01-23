@@ -177,26 +177,28 @@ function initTriggers()
 			obj=objs.baby,
 			conds={emptyHand},
 			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
-		}}
+		}
+	}
 
-		triggers.shelf = {
-			Trigger{
-				name="takeDiap",
-				obj=objs.shelf,
-				conds={emptyHand,resAbove(s.r.groc,0)},
-				action=Action("Take Diaper", 1, function()
-					s.r.diap = s.r.diap - 1
-					s.p:hold("diap")
-				end)
-			}, Trigger{
-				name="takeIngr",
-				obj=objs.shelf,
-				conds={emptyHand,resAbove(s.r.diap,0)},
-				action=Action("Take Ingredients", 1, function()
-					s.r.groc = s.r.groc - 1
-					s.p:hold("ingr")
-				end)
-			}}
+	triggers.shelf = {
+		Trigger{
+			name="takeDiap",
+			obj=objs.shelf,
+			conds={emptyHand,resAbove(s.r.groc,0)},
+			action=Action("Take Diaper", 1, function()
+				s.r.diap = s.r.diap - 1
+				s.p:hold("diap")
+			end)
+		}, Trigger{
+			name="takeIngr",
+			obj=objs.shelf,
+			conds={emptyHand,resAbove(s.r.diap,0)},
+			action=Action("Take Ingredients", 1, function()
+				s.r.groc = s.r.groc - 1
+				s.p:hold("ingr")
+			end)
+		}
+	}
 end
 
 function initEvents()
