@@ -2,6 +2,12 @@ require "menu"
 
 PALETTE_MAP = 0x3FF0
 
+function adjMetric(self,metric,val)
+	local nval = self.props[metric]+val
+	nval = math.max(0,math.min(100,nval))
+	self.props[metric]=nval
+end
+
 function calcBloc(obj)
 	local loc = obj.loc
 	return {
@@ -24,6 +30,14 @@ function _objDraw(self, active)
 		end)
 	end
 	spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
+	if self.isFlashing ~= nil then
+		local isRed = self:isFlashing() and (t//20%2) == 0
+		if isRed then
+			withSwapAll(3,function()
+				spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			end)
+		end
+	end
 end
 
 function makeObj(loc)
@@ -41,7 +55,9 @@ function withSwapAll(newi, f) -- Swap colors and do f()
 	for i = 0,15 do
 		-- i is the palette index of the color in the sprite to change
 		oldc[i] = peek4(PALETTE_MAP*2+i) -- save the original color
-		poke4(PALETTE_MAP*2+i, newc) -- write new color at i
+		if i ~= 12 then -- spare whites
+			poke4(PALETTE_MAP*2+i, newc) -- write new color at i
+		end
 	end
 		f() -- do the thing
 	for i = 0,15 do
