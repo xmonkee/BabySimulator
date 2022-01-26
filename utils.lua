@@ -33,7 +33,7 @@ function _objDraw(self, active)
 	if self.isFlashing ~= nil then
 		local isRed = self:isFlashing() and (t//20%2) == 0
 		if isRed then
-			withSwapAll(3,function()
+			withSwap(self.mainColor, 3,function()
 				spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
 			end)
 		end

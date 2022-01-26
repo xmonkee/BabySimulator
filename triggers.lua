@@ -15,55 +15,54 @@ function initTriggers()
 		end
 	end
 
-	local resAbove = function(res, lvl)
-		return function()
-			return res > lvl
-		end
-	end
-
-	local resBelow = function(res, lvl)
-		return function()
-			return res <= lvl
-		end
-	end
-
 	triggers = {}
 
-	triggers.baby = {
-		Trigger{
-			name="play",
-			conds={emptyHand},
-			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
-		}
-	}
 
-	triggers.shelf = {
+	triggers.dshelf = {
 		Trigger{
 			name="takeDiap",
-			conds={emptyHand,resAbove(s.r.groc,0)},
+			conds={emptyHand, function() return s.r.diap >= 1 end},
 			action=Action("Take diaper", 3, function()
 				s.r.diap = s.r.diap - 1
 				s.p:hold("diap")
 			end)
 		}, Trigger{
+			name="storeDiaps",
+			conds={holding("diaps")},
+			action=Action("Store diapers", 2, function()
+				s.r.diap = s.r.diap + 3
+				s.p:drop()
+			end)
+		}, Trigger{
+			name="storeDiap",
+			conds={holding("diap")},
+			action=Action("Store diaper", 3, function()
+				s.r.diap = s.r.diap + 1
+				s.p:drop()
+			end)
+		}
+	}
+
+	triggers.gshelf = {
+		Trigger{
 			name="takeIngr",
-			conds={emptyHand,resAbove(s.r.diap,0)},
+			conds={emptyHand,function() return s.r.groc >= 1 end},
 			action=Action("Take ingredients", 3, function()
 				s.r.groc = s.r.groc - 1
 				s.p:hold("ingr")
 			end)
 		}, Trigger{
 			name="storeGrocs",
-			conds={holding("groc"),resAbove(s.r.diap,0)},
+			conds={holding("groc")},
 			action=Action("Store groceries", 1, function()
 				s.r.groc = s.r.groc + 3
 				s.p:drop()
 			end)
 		}, Trigger{
-			name="storeDiaps",
-			conds={holding("diaps"),resAbove(s.r.diap,0)},
-			action=Action("Store diapers", 2, function()
-				s.r.diap = s.r.diap + 4
+			name="storeIngr",
+			conds={holding("ingr")},
+			action=Action("Store ingredients", 2, function()
+				s.r.groc = s.r.groc + 1
 				s.p:drop()
 			end)
 		}
@@ -74,23 +73,31 @@ function initTriggers()
 			name="throw",
 			conds={notEmptyHand},
 			action=Action("Throw", 4, function()
-				s.p:drop()
-				s.r.trash = s.r.trash + 1
+				if s.r.trash >= 10 then
+					notify("Trash is full")
+				else
+					s.p:drop()
+					s.r.trash = s.r.trash + 1
+				end
 			end)
 		}
 	}
 
-	triggers.store = {
+	triggers.dstore = {
 		Trigger{
 			name="buyDiaps",
-			conds={emptyHand, resAbove(s.r.money,costs.diaps)},
+			conds={emptyHand, function() return s.r.money >= costs.diaps end},
 			action=Action("Buy diapers", 2, function()
 				s.p:hold("diaps")
 				s.r.money = s.r.money - costs.diaps
 			end)
-		}, Trigger{
+		}
+	}
+
+	triggers.gstore = {
+		Trigger{
 			name="buyGroc",
-			conds={emptyHand, resAbove(s.r.money,costs.groc)},
+			conds={emptyHand, function() return s.r.money >= costs.groc end},
 			action=Action("Buy groceries", 2, function()
 				s.p:hold("groc")
 				s.r.money = s.r.money - costs.groc
@@ -98,15 +105,39 @@ function initTriggers()
 		}
 	}
 
-	triggers.baby = {
+	triggers.stove = {
 		Trigger{
-			name="changeDiap",
-			conds={holding("diap"),resAbove(s.b.poops,1)},
-			action=Action("Change diaper", 1, function()
-				s.b.poops = s.b.poops-1
-				s.p:hold("pdiap")
+			name="cook",
+			conds={holding("ingr")},
+			action=Action("Cook", 1, function()
+				s.p:hold("food")
 			end)
 		}
 	}
 
+	triggers.baby = {
+		Trigger{
+			name="changeDiap",
+			conds={holding("diap"), function() return s.b.poops >= 1 end},
+			action=Action("Change diaper", 1, function()
+				s.b.poops = 0
+				s.p:hold("pdiap")
+			end)
+		}, Trigger{
+			name="sleep",
+			conds={emptyHand},
+			action=Action("Put baby to sleep", 1, function() s.b:adj("brd",-10) end)
+		}, Trigger{
+			name="play",
+			conds={emptyHand},
+			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
+		}, Trigger{
+			name="Feed",
+			conds={holding("food")},
+			action=Action("Feed baby", 1, function()
+				s.b:adj("enr",30)
+				s.p:drop()
+			end)
+		}
+	}
 end

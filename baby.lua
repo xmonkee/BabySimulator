@@ -1,5 +1,5 @@
 function initBaby()
-	local baby = makeObj({x=200,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
+	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
 	baby.props = {enr=100, brd=0, sleepy=0}
 	baby.poops = 0
 	baby.mainColor = 4
@@ -19,6 +19,11 @@ function initBaby()
 	function baby.awake(self)
 		self.asleep=false
 		self.loc.spr=self.loc.ospr
+	end
+
+	function baby.poop(self)
+		self.poops = self.poops + 1
+		self.poopedAt=t
 	end
 
 	function baby.isFlashing(self)
@@ -50,6 +55,17 @@ function initBaby()
 		else
 			self:adj("sleepy", 20/ticsPerHour)
 			self:adj("brd", 30/ticsPerHour)
+		end
+	end
+
+	function baby.fireEvents(self)
+		if math.random() < 10/(3*ticsPerHour) then
+			fireEvent(function() self:poop() end, "Baby Pooped")
+		end
+		if math.random() < 1/(3*ticsPerHour) then
+			if s.b.asleep then
+				fireEvent(function() self:awake() end, "Baby Woke Up")
+			end
 		end
 	end
 

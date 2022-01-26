@@ -1,6 +1,15 @@
 function initParent()
+	local handSprs = {
+		diaps={spr=371,s=2},
+		diap={spr=260,s=1},
+		pdiap={spr=257,s=1}, --poop diaper
+		groc={spr=276,s=2},
+		ingr={spr=370,s=1},
+		food={spr=384,s=1},
+	}
+
 	local parent = makeObj({
-		x=100,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
+		x=50,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
 		flip=0,lf=6,rt=10,up=14,dn=16
 	})
 	parent.props = {enr=100, hpy=100}
@@ -26,10 +35,10 @@ function initParent()
 		local l = self.loc
 		spr(l.spr,l.x,l.y,0,l.sc,l.flip,0,l.w,l.h)
 		local hspr = self:handSpr()
-		if hspr then
+		if hspr then -- draw object in hand
 			local x = l.x + 23
 			if l.flip==1 then x = l.x+1 end
-			spr(hspr.spr,x,l.y+10,15,1,0,0,hspr.s,hspr.s)
+			spr(hspr.spr,x,l.y+10,0,1,0,0,hspr.s,hspr.s)
 		end
 	end
 

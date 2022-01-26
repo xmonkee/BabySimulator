@@ -15,13 +15,6 @@ function initConstants()
 		menuItemProgress=6,
 		textShadow=0,
 	}
-	handSprs = {
-		ingr={spr=370,s=1},
-		diap={spr=371,s=1},
-		pdiap={spr=272,s=1}, --poop diaper
-		groc={spr=276,s=2},
-		diaps={spr=371,s=2}
-	}
 	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
@@ -62,31 +55,21 @@ end
 function initObjs()
 	objs = {}
 	objs.baby = s.b
-	objs.work = makeObj({x=200,y=15,w=2,h=2,spr=282,sc=2})
-	objs.shelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-	objs.stove = makeObj({x=100,y=15,w=2,h=2,spr=284,sc=2})
-	objs.store = makeObj({x=10,y=65,w=4,h=4,spr=400,sc=1})
+	objs.work = makeObj({x=100,y=15,w=2,h=2,spr=282,sc=2})
+	objs.dshelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
+	objs.gshelf = makeObj({x=50,y=15,w=2,h=2,spr=310,sc=2})
+	objs.stove = makeObj({x=10,y=65,w=2,h=2,spr=284,sc=2})
+	objs.dstore = makeObj({x=200,y=15,w=2,h=2,spr=286,sc=2})
+	objs.gstore = makeObj({x=160,y=15,w=2,h=2,spr=272,sc=2})
 	objs.trash = initTrash()
 end
 
-
-function initEvents()
-	events = {}
-	function events.poop()
-		s.b.poops = s.b.poops + 1
-		s.b.poopedAt=t
-	end
-	function events.babyWakeUp()
-		s.b:awake()
-	end
-end
 
 function init()
 	initConstants()
 	initState()
 	initObjs()
 	initTriggers()
-	initEvents()
 end
 
 init()
@@ -98,7 +81,7 @@ function animResets()
 end
 
 function updateLiveliness()
-	if s.b:happ() <= 0 then 
+	if s.b:happ() <= 0 then
 		s.go = true
 		notify("Baby got too sad")
 	end
@@ -123,15 +106,8 @@ function fireEvent(event, notification)
 	notify(notification)
 end
 
-function updateEvents()
-	if math.random() < 10/(3*ticsPerHour) then
-		fireEvent(events.poop, "Baby Pooped")
-	end
-	if math.random() < 1/(3*ticsPerHour) then
-		if s.b.asleep then
-			fireEvent(events.babyWakeUp, "Baby Woke Up")
-		end
-	end
+function fireEvents()
+	s.b:fireEvents()
 end
 
 function handleKeys()
@@ -191,7 +167,7 @@ function update()
 	calcActiveObj()
 	calcTriggers()
 	handleKeys()
-	updateEvents()
+	fireEvents()
 end
 
 ---------------------------------------------------------------
