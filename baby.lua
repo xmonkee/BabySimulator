@@ -1,12 +1,12 @@
 function initBaby()
 	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
-	baby.props = {enr=100, brd=0, sleepy=0}
+	baby.props = {full=100, love=0, ener=0}
 	baby.poops = 0
 	baby.mainColor = 4
 
 	function baby.happ(self)
 		local p = self.props
-		return ((p.enr/100) * (100-p.brd)/100 * (maxPoops-self.poops)/maxPoops * (100-p.sleepy)/100)*100
+		return ((p.ener/100) * (p.love/100)  * (p.sleepy)/100* (maxPoops-self.poops)/maxPoops)*100
 	end
 
 	baby.asleep=false

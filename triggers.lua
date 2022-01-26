@@ -126,7 +126,13 @@ function initTriggers()
 		}, Trigger{
 			name="sleep",
 			conds={emptyHand},
-			action=Action("Put baby to sleep", 1, function() s.b:adj("brd",-10) end)
+			action=Action("Put baby to sleep", 1, function()
+				if math.random()*90 < s.b.props.sleepy then
+					notify("Baby didn't sleep")
+				else
+					s.b:sleep()
+				end
+			end)
 		}, Trigger{
 			name="play",
 			conds={emptyHand},

@@ -6,7 +6,7 @@
 -- version: 0.1
 -- script:  lua
 
-require "babysim"
+require "sim"
 
 -- <TILES>
 -- 000:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
