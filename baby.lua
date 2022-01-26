@@ -1,18 +1,20 @@
 function initBaby()
 	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
-	baby.props = {full=100, love=0, ener=0}
+	baby.props = {full=50, love=50, ener=50}
 	baby.poops = 0
 	baby.mainColor = 4
 
 	function baby.happ(self)
 		local p = self.props
-		return ((p.ener/100) * (p.love/100)  * (p.sleepy)/100* (maxPoops-self.poops)/maxPoops)*100
+		return ((p.ener/100) * (p.love/100)  * (p.full)/100* (maxPoops-self.poops)/maxPoops)*100
 	end
 
 	baby.asleep=false
 	baby.sleptAt=0
+
 	function baby.sleep(self)
 		self.asleep=true
+		self.sleptAt = t
 		self.loc.spr=self.loc.ospr+self.loc.w
 	end
 
@@ -49,21 +51,24 @@ function initBaby()
 	baby.adj = adjMetric
 
 	function baby.updateTimeBasedStats(self)
-		self:adj("enr",-50/ticsPerHour)
 		if self.asleep then
-			self:adj("sleepy", -30/ticsPerHour)
+			self:adj("ener", 30/ticsPerHour)
+			self:adj("full",-20/ticsPerHour)
 		else
-			self:adj("sleepy", 20/ticsPerHour)
-			self:adj("brd", 30/ticsPerHour)
+			self:adj("full",-50/ticsPerHour)
+			self:adj("ener",-30/ticsPerHour)
+			self:adj("love",-30/ticsPerHour)
 		end
 	end
 
+	poopProb = probgen(3, 1)
+	wakeProb = probgen(2, 0.5)
 	function baby.fireEvents(self)
-		if math.random() < 10/(3*ticsPerHour) then
+		if poopProb(self.poopedAt)  then
 			fireEvent(function() self:poop() end, "Baby Pooped")
 		end
-		if math.random() < 1/(3*ticsPerHour) then
-			if s.b.asleep then
+		if s.b.asleep then
+			if wakeProb(self.sleptAt) then
 				fireEvent(function() self:awake() end, "Baby Woke Up")
 			end
 		end

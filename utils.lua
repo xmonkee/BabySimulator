@@ -122,3 +122,22 @@ function Trigger(triggerArgs)
 	t.triggered = _triggered
 	return t
 end
+
+local oneByRoot2pi = 1/math.sqrt(2*math.pi)
+local function getNormalProbDensity(x, mu, sigma)
+	return (oneByRoot2pi / sigma) * math.exp(-1/2*math.pow((x-mu)/sigma, 2))
+end
+
+function probgen(meanHours, sd)
+	local cprob = 0
+	local function shouldFireEvent(lastT)
+		local probD = getNormalProbDensity((t-lastT)/ticsPerHour, meanHours, sd or 1)
+		cprob = cprob + probD * 1/ticsPerHour
+		local isEvent =  math.random() < cprob
+		if isEvent then
+			cprob = 0
+		end
+		return isEvent
+	end
+	return shouldFireEvent
+end
