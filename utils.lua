@@ -1,6 +1,12 @@
 require "menu"
 
 PALETTE_MAP = 0x3FF0
+RED = 3
+SOLIDS = {[73]=1,[74]=1,[75]=1}  -- "solid" map sprites
+
+function solid(x,y)
+	return SOLIDS[mget(x//8,y//8)]
+end
 
 function adjMetric(self,metric,val)
 	local nval = self.props[metric]+val
@@ -20,23 +26,23 @@ end
 
 function _objDraw(self, active)
 	local loc = self.loc
-	if active then
+	--if active then
 		--rectb(loc.x-1,loc.y-1,loc.w*loc.sc*8+1,loc.h*loc.sc*8+1,colors.label)
-		withSwapAll(12, function()
-			spr(loc.spr,loc.x-1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			spr(loc.spr,loc.x+1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			spr(loc.spr,loc.x-1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			spr(loc.spr,loc.x+1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-		end)
-	end
+		--withSwapAll(12, function()
+			--spr(loc.spr,loc.x-1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			--spr(loc.spr,loc.x+1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			--spr(loc.spr,loc.x-1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			--spr(loc.spr,loc.x+1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+		--end)
+	--end
 	spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
-	if self.isFlashing ~= nil then
-		local isRed = self:isFlashing() and (t//20%2) == 0
-		if isRed then
-			withSwap(self.mainColor, 3,function()
-				spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			end)
-		end
+end
+
+function withFlashing(mainColor, swapWith, isFlashing, f)
+	if isFlashing() and (t//10%2) == 0 then
+		withSwap(mainColor, swapWith, f)
+	else
+		f()
 	end
 end
 
@@ -85,6 +91,16 @@ function collision(bloc1, bloc2)
 	return true
 end
 
+function drawMeter(icon,x,y,val)
+	withFlashing(0, 1, function() return val < 20 end, function()
+		rect(x+8,y+2,15,4,0)
+	end)
+	withFlashing(colors.label, RED, function() return val < 20 end, function()
+		rect(x+9,y+3,math.ceil(val/100*14),2,colors.label)
+	end)
+	spr(icon,x,y,0)
+end
+
 function isAdjacent(bloc1, bloc2)
 	-- technically adjacent OR overlapping,
 	-- but we assume overlap is avoided elsewhere
@@ -100,6 +116,9 @@ end
 function anyCollisions(bloc, objs)
 	for _,obj in pairs(objs) do
 		if collision(bloc, obj.bloc) then return true end
+	end
+	if solid(bloc.x1,bloc.y1) or solid(bloc.x2,bloc.y1) or solid(bloc.x1,bloc.y2) or solid(bloc.x2,bloc.y2) then
+		return true
 	end
 	return false
 end

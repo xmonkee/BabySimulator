@@ -19,7 +19,6 @@ function initConstants()
 	ticsPerMinute=60*ticsPerSecond
 	ticsPerHour=60*ticsPerMinute
 
-	maxTrash = 5
 	maxPoops = 3
 	costs = {diaps=30,groc=50}
 end
@@ -55,15 +54,14 @@ end
 function initObjs()
 	objs = {}
 	objs.baby = s.b
-	objs.work = makeObj({x=100,y=15,w=2,h=2,spr=282,sc=2})
-	objs.dshelf = makeObj({x=10,y=15,w=2,h=2,spr=278,sc=2})
-	objs.gshelf = makeObj({x=50,y=15,w=2,h=2,spr=310,sc=2})
-	objs.stove = makeObj({x=10,y=65,w=2,h=2,spr=284,sc=2})
-	objs.dstore = makeObj({x=200,y=15,w=2,h=2,spr=286,sc=2})
-	objs.gstore = makeObj({x=160,y=15,w=2,h=2,spr=272,sc=2})
+	objs.work = makeObj({x=100,y=15,w=4,h=4,spr=408,sc=1})
+	objs.dshelf = makeObj({x=10,y=15,w=4,h=4,spr=404,sc=1})
+	objs.gshelf = makeObj({x=56,y=15,w=4,h=4,spr=404,sc=1})
+	objs.stove = makeObj({x=10,y=65,w=2,h=4,spr=341,sc=1})
+	objs.dstore = makeObj({x=160,y=15,w=4,h=4,spr=400,sc=1})
+	objs.gstore = makeObj({x=200,y=15,w=4,h=4,spr=400,sc=1})
 	objs.trash = initTrash()
 end
-
 
 function init()
 	initConstants()
@@ -81,13 +79,10 @@ function animResets()
 end
 
 function updateLiveliness()
-	if s.b:happ() <= 0 then
+	local babySad = s.b:sad()
+	if babySad then
 		s.go = true
-		notify("Baby got too sad")
-	end
-	if s.r.trash > maxTrash then 
-		s.go = true
-		notify("Trash got too full")
+		notify(babySad)
 	end
 end
 
@@ -108,6 +103,7 @@ end
 
 function fireEvents()
 	s.b:fireEvents()
+	objs.trash:fireEvents()
 end
 
 function handleKeys()
@@ -186,14 +182,26 @@ function timestamp()
 end
 
 function drawClock()
-	spr(256,0,0,0)
-	sprint(timestamp(),10,1,colors.label)
+	spr(256,1,0,0)
+	sprint(timestamp(),11,1,colors.label)
 end
 
 function drawObjs()
 	for objName,obj in pairs(objs) do
 		obj:draw(objName == s.activeObj)
 	end
+end
+
+function drawResources()
+	-- diapers
+	spr(260,objs.dshelf.loc.x+1,objs.dshelf.loc.y+1,0)
+	spr(260,objs.dstore.loc.x+20,objs.dstore.loc.y+15,0)
+	print("x"..s.r.diap, objs.dshelf.loc.x+11,objs.dshelf.loc.y+2, 15, false, 1, false)
+
+	-- grocs
+	spr(268,objs.gshelf.loc.x+5,objs.gshelf.loc.y+1,0)
+	spr(268,objs.gstore.loc.x+22,objs.gstore.loc.y+14,0)
+	print("x"..s.r.groc, objs.gshelf.loc.x+11,objs.gshelf.loc.y+2, 15, false, 1, false)
 end
 
 function drawNotifications()
@@ -227,6 +235,7 @@ function draw()
   map()
 	drawClock()
 	drawObjs()
+	drawResources()
 	s.p:draw()
 	if s.mode == "menu" then
 		s.menu:draw()

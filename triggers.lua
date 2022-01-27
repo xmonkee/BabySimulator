@@ -68,21 +68,6 @@ function initTriggers()
 		}
 	}
 
-	triggers.trash = {
-		Trigger{
-			name="throw",
-			conds={notEmptyHand},
-			action=Action("Throw", 4, function()
-				if s.r.trash >= 10 then
-					notify("Trash is full")
-				else
-					s.p:drop()
-					s.r.trash = s.r.trash + 1
-				end
-			end)
-		}
-	}
-
 	triggers.dstore = {
 		Trigger{
 			name="buyDiaps",
@@ -125,7 +110,7 @@ function initTriggers()
 			end)
 		}, Trigger{
 			name="sleep",
-			conds={emptyHand},
+			conds={emptyHand, function() return not s.b.asleep end},
 			action=Action("Put baby to sleep", 1, function()
 				if s.b.props.wake > 70 then
 					notify("Baby didn't sleep")
@@ -134,8 +119,14 @@ function initTriggers()
 				end
 			end)
 		}, Trigger{
+			name="wake",
+			conds={emptyHand, function() return s.b.asleep end},
+			action=Action("Wake up baby", 1, function()
+					s.b:awake()
+			end)
+		}, Trigger{
 			name="play",
-			conds={emptyHand},
+			conds={emptyHand, function() return not s.b.asleep end},
 			action=Action("Play", 1, function() s.b:adj("love", 20) end)
 		}, Trigger{
 			name="Feed",
@@ -143,6 +134,53 @@ function initTriggers()
 			action=Action("Feed baby", 1, function()
 				s.b:adj("full",30)
 				s.p:drop()
+			end)
+		}
+	}
+	triggers.work = {
+		Trigger{
+			name="work",
+			conds={emptyHand},
+			action=Action("Work", 1, function() s.r.money = s.r.money + 30 end)
+		}
+	}
+	triggers.trash = {
+		Trigger{
+			name="takeTrash",
+			conds={emptyHand},
+			action=Action("Take out trash", 2, function()
+				s.r.trashInHand = s.r.trash
+				s.r.trash = 0
+				s.p:hold("trash")
+			end)
+		}, Trigger{
+			name="putTrashBack",
+			conds={holding("trash")},
+			action=Action("Put trash back", 2, function()
+				s.r.trash = s.r.trashInHand
+				s.p:drop()
+			end)
+		}, Trigger{
+			name="throw",
+			conds={notEmptyHand},
+			action=Action("Throw", 4, function()
+				if s.r.trash >= objs.trash.maxTrash then
+					notify("Trash is full")
+				else
+					s.p:drop()
+					s.r.trash = s.r.trash + 1
+				end
+			end)
+		}
+	}
+
+	triggers.truck = {
+		Trigger{
+			name="dump",
+			conds={holding("trash")},
+			action=Action("Dump trash", 3, function()
+				s.p:drop()
+				s.r.trashInHand=0
 			end)
 		}
 	}

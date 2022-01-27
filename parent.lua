@@ -5,6 +5,7 @@ handSprs = {
 	groc={spr=276,s=2},
 	ingr={spr=370,s=1},
 	food={spr=384,s=1},
+	trash={spr=278,s=2},
 }
 
 function initParent()
@@ -40,6 +41,10 @@ function initParent()
 			if l.flip==1 then x = l.x+1 end
 			spr(hspr.spr,x,l.y+10,0,1,0,0,hspr.s,hspr.s)
 		end
+		x = 214
+		spr(269,x,0, 0)
+		x = x + 8
+		print(s.r.money, x, 1, colors.label)
 	end
 
 	function parent.handleKeys(self)

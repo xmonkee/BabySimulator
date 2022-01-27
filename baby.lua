@@ -1,17 +1,20 @@
 function initBaby()
-	local baby = makeObj({x=100,y=114,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
-	baby.props = {full=50, love=50, wake=50}
+	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
+	baby.props = {full=40, love=40, wake=40}
 	baby.poops = 0
 	baby.poopedAt = 0
 	baby.mainColor = 4
-
-	function baby.happ(self)
-		local p = self.props
-		return ((p.wake/100) * (p.love/100)  * (p.full)/100* (maxPoops-self.poops)/maxPoops)*100
-	end
-
 	baby.asleep=false
 	baby.sleptAt=0
+
+	function baby.sad(self)
+		local p = self.props
+		if p.full <= 0 then return "Baby got too hungry" end
+		if p.love <= 0 then return "Baby got too sad" end
+		if p.wake <= 0 then return "Baby got too sleepy" end
+		if self.poops >= 3 then return "Baby got too dirty" end
+		return false
+	end
 
 	function baby.sleep(self)
 		self.asleep=true
@@ -29,19 +32,6 @@ function initBaby()
 		self.poopedAt=t
 	end
 
-	function baby.isFlashing(self)
-		return self:happ() <= 5
-	end
-
-	function drawMeter(icon,x,y,val)
-		local y = y + 2
-		rectb(x,y,15,4,colors.label)
-		rect(x+1,y+1,val/100*14,2,colors.label)
-		local x = x - 5
-		y = y - 2
-		spr(icon,x,y,0)
-	end
-
 	baby._draw = baby.draw -- original draw fn
 	function baby.draw(self, isActive)
 		self:_draw(isActive)
@@ -49,17 +39,26 @@ function initBaby()
 		local loc = self.loc
 
 		-- Draw meters
-		local x = loc.x + loc.w*loc.sc*8 + 4
-		local y = loc.y - 10
+		local x = 120
+		local y = 0
+		spr(263,x,y,0) -- baby face
+		x = x + 10
+		print("[",x,y+1,colors.label)
+		x = x + 4
 		drawMeter(handSprs.food.spr,x,y,self.props.full)
-		y = y + 8
+		x = x + 22
 		drawMeter(265,x,y,self.props.wake)
-		y = y + 8
+		x = x + 25
 		drawMeter(258,x,y,self.props.love)
-		y = y + 8
+		x = x + 26
+		print("]",x,y+1,colors.label)
 		-- draw the poops
-		spr(267,x-5,y,0)
-		print("x"..self.poops, x+4, y, colors.label)
+		x = loc.x+15
+		y = loc.y+10
+		for _ = 1,self.poops do
+			spr(267,x,y,0)
+			x = x + 8
+		end
 	end
 
 	baby.adj = adjMetric
@@ -75,8 +74,8 @@ function initBaby()
 		end
 	end
 
-	poopProb = probgen(4, 1)
-	wakeProb = probgen(3, 0.5)
+	poopProb = probgen(3, 1)
+	wakeProb = probgen(3, 1)
 	function baby.fireEvents(self)
 		if poopProb(self.poopedAt)  then
 			fireEvent(function() self:poop() end, "Baby Pooped")
