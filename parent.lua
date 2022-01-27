@@ -1,13 +1,13 @@
-function initParent()
-	local handSprs = {
-		diaps={spr=371,s=2},
-		diap={spr=260,s=1},
-		pdiap={spr=257,s=1}, --poop diaper
-		groc={spr=276,s=2},
-		ingr={spr=370,s=1},
-		food={spr=384,s=1},
-	}
+handSprs = {
+	diaps={spr=371,s=2},
+	diap={spr=260,s=1},
+	pdiap={spr=257,s=1}, --poop diaper
+	groc={spr=276,s=2},
+	ingr={spr=370,s=1},
+	food={spr=384,s=1},
+}
 
+function initParent()
 	local parent = makeObj({
 		x=50,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
 		flip=0,lf=6,rt=10,up=14,dn=16

@@ -127,7 +127,7 @@ function initTriggers()
 			name="sleep",
 			conds={emptyHand},
 			action=Action("Put baby to sleep", 1, function()
-				if math.random()*90 < s.b.props.sleepy then
+				if s.b.props.wake > 70 then
 					notify("Baby didn't sleep")
 				else
 					s.b:sleep()
@@ -136,12 +136,12 @@ function initTriggers()
 		}, Trigger{
 			name="play",
 			conds={emptyHand},
-			action=Action("Play", 1, function() s.b:adj("brd",-10) end)
+			action=Action("Play", 1, function() s.b:adj("love", 20) end)
 		}, Trigger{
 			name="Feed",
 			conds={holding("food")},
 			action=Action("Feed baby", 1, function()
-				s.b:adj("enr",30)
+				s.b:adj("full",30)
 				s.p:drop()
 			end)
 		}

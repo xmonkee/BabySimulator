@@ -26,10 +26,10 @@ end
 
 function initResources()
 	local resources = {
-		money=100,
-		groc=3,
-		diap=10,
-		trash=0
+		money=50,
+		groc=2,
+		diap=2,
+		trash=2
 	}
 	setmetatable(resources, {
 		__index={

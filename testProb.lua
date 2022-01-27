@@ -8,7 +8,7 @@ diffs = 0
 ndiffs = 0
 madiff = 0
 midiff = 1000
-shouldFireEvent = probgen(3, 2)
+shouldFireEvent = probgen(3, 1)
 for t_=0,100000 do
 	t = t_
 	local s = shouldFireEvent(t0)
@@ -22,4 +22,4 @@ for t_=0,100000 do
 		t0 = t
 	end
 end
-print(madiff.." "..diffs/ndiffs.." "..midiff)
+print(midiff.." "..diffs/ndiffs.." "..madiff)
