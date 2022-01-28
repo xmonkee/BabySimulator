@@ -110,8 +110,8 @@ function isAdjacent(bloc1, bloc2)
 	local up,down = bloc1,bloc2
 	if bloc1.x1 > bloc2.x1 then left,right = right,left end
 	if bloc1.y1 > bloc2.y1 then up,down = down,up end
-	if left.x2 < right.x1-1 then return false end
-	if up.y2 < down.y1-1 then return false end
+	if left.x2 < right.x1-3 then return false end
+	if up.y2 < down.y1-3 then return false end
 	return true
 end
 
