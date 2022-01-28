@@ -3,6 +3,8 @@ require "menu"
 PALETTE_MAP = 0x3FF0
 RED = 3
 SOLIDS = {[73]=1,[74]=1,[75]=1}  -- "solid" map sprites
+min = math.min
+max = math.max
 
 function solid(x,y)
 	return SOLIDS[mget(x//8,y//8)]

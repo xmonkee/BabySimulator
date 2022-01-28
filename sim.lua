@@ -96,11 +96,6 @@ function notify(notification)
 	s.notificationAt = t
 end
 
-function fireEvent(event, notification)
-	event()
-	notify(notification)
-end
-
 function fireEvents()
 	s.b:fireEvents()
 	objs.trash:fireEvents()

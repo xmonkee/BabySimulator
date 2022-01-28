@@ -19,6 +19,7 @@ function initBaby()
 	function baby.sleep(self)
 		self.asleep=true
 		self.sleptAt = t
+		self:adj("wake", 40)
 		self.loc.spr=self.loc.ospr+self.loc.w
 	end
 
@@ -64,26 +65,20 @@ function initBaby()
 	baby.adj = adjMetric
 
 	function baby.updateTimeBasedStats(self)
-		if self.asleep then
-			self:adj("wake", 30/ticsPerHour)
-			self:adj("full",-20/ticsPerHour)
-		else
-			self:adj("full",-50/ticsPerHour)
-			self:adj("wake",-30/ticsPerHour)
-			self:adj("love",-30/ticsPerHour)
-		end
+		self:adj("full",-50/ticsPerHour)
+		self:adj("wake",-30/ticsPerHour)
+		self:adj("love",-30/ticsPerHour)
 	end
 
-	poopProb = probgen(3, 1)
-	wakeProb = probgen(3, 1)
+	poopProb = probgen(4, 1.5)
 	function baby.fireEvents(self)
 		if poopProb(self.poopedAt)  then
-			fireEvent(function() self:poop() end, "Baby Pooped")
+			self:poop()
+			notify("Baby Pooped")
 		end
-		if s.b.asleep then
-			if wakeProb(self.sleptAt) then
-				fireEvent(function() self:awake() end, "Baby Woke Up")
-			end
+		if self.asleep and (t - self.sleptAt) > 5*ticsPerMinute  then
+			self:awake()
+			notify("Baby Woke Up")
 		end
 	end
 
