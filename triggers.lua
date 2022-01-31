@@ -54,7 +54,7 @@ function initTriggers()
 		}, Trigger{
 			name="storeGrocs",
 			conds={holding("groc")},
-			action=Action("Store groceries", 1, function()
+			action=Action("Store groceries", 2, function()
 				s.r.groc = s.r.groc + 3
 				s.p:drop()
 			end)
@@ -94,7 +94,7 @@ function initTriggers()
 		Trigger{
 			name="cook",
 			conds={holding("ingr")},
-			action=Action("Cook", 1, function()
+			action=Action("Cook", 2, function()
 				s.p:hold("food")
 			end)
 		}
@@ -104,7 +104,7 @@ function initTriggers()
 		Trigger{
 			name="changeDiap",
 			conds={holding("diap"), function() return s.b.poops >= 1 end},
-			action=Action("Change diaper", 1, function()
+			action=Action("Change diaper", 1.5, function()
 				s.b.poops = 0
 				s.p:hold("pdiap")
 			end)
@@ -121,7 +121,7 @@ function initTriggers()
 		}, Trigger{
 			name="wake",
 			conds={emptyHand, function() return s.b.asleep end},
-			action=Action("Wake up baby", 1, function()
+			action=Action("Wake up baby", 2, function()
 					s.b:awake()
 			end)
 		}, Trigger{
@@ -131,7 +131,7 @@ function initTriggers()
 		}, Trigger{
 			name="Feed",
 			conds={holding("food")},
-			action=Action("Feed baby", 1, function()
+			action=Action("Feed baby", 1.5, function()
 				s.b:adj("full",30)
 				s.p:drop()
 			end)

@@ -70,9 +70,8 @@ function initBaby()
 		self:adj("love",-30/ticsPerHour)
 	end
 
-	poopProb = probgen(4, 1.5)
 	function baby.fireEvents(self)
-		if poopProb(self.poopedAt)  then
+		if math.random() < 0.007*(t - self.poopedAt)/ticsPerHour then
 			self:poop()
 			notify("Baby Pooped")
 		end
