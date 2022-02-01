@@ -49,7 +49,7 @@ function initParent()
 	end
 
 	local dx, dy = 0, 0
-	function decelerateX()
+	local function decelerateX()
 		if dx < -0.2 then dx = dx + 0.2
 		elseif dx < -0.1 then dx = dx + 0.1
 		elseif dx > 0.2 then dx = dx - 0.2
@@ -57,31 +57,34 @@ function initParent()
 		else dx = 0
 		end
 	end
-	function decelerateY()
-		if dy < -0.2 then dy = dy + 0.2
-		elseif dy < -0.1 then dy = dy + 0.1
-		elseif dy > 0.2 then dy = dy - 0.2
+	local function decelerateY()
+		-- if dy < -0.2 then dy = dy + 0.2
+		if dy < -0.1 then dy = dy + 0.1
+		-- elseif dy > 0.2 then dy = dy - 0.2
 		elseif dy > 0.1 then dy = dy - 0.1
 		else dy = 0
 		end
 	end
+
 	function parent.handleKeys(self)
 		if btn(0) then dy=max(-2,dy-.1) elseif btn(1) then dy=min(2,dy+.1) else decelerateY() end
 		if btn(2) then dx=max(-2,dx-.1) elseif btn(3) then dx=min(2,dx+.1) else decelerateX() end
-		if dx ~= 0 or dy ~= 0 then self:mv(dx, dy) end
+		if dx ~= 0 or dy ~= 0 then self:mv() end
 	end
 
 
-	function parent.mv(self, vx, vy)
+	function parent.mv(self)
 		local l = self.loc
-		local x,y=l.x+vx,l.y+vy
+		local x,y=l.x+dx,l.y+dy
 		local pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
 		if not anyCollisions(pbloc, objs) then
 			l.x=math.max(0, math.min(x, 210))
 			l.y=math.max(10, math.min(y, 100))
+		else
+			dx,dy=0,0	
 		end
 		l.spr = l.ospr + ((t//10)%2 + 1)*2
-		if vx<0 then l.flip=1 elseif vx>0 then l.flip=0 end
+		if dx<0 then l.flip=1 elseif dx>0 then l.flip=0 end
 	end
 
 	parent.adj = adjMetric
