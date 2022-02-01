@@ -49,6 +49,7 @@ function initState()
 	s.activeObj = nil
 	s.recalcTrigs = true
 	s.mode = "normal"
+	s.menu = Menu:new()
 end
 
 function initObjs()
@@ -128,20 +129,17 @@ function calcTriggers()
 	if not s.recalcTrigs then return end
 	if s.activeObj == nil or triggers[s.activeObj] == nil then
 		s.mode = "normal"
-		s.menu = nil
 	else
-		local menu = Menu:new()
+		s.menu:empty()
 		for tname, trigger in pairs(triggers[s.activeObj]) do
 			if trigger:triggered() then
-				menu:add(trigger.action)
+				s.menu:add(trigger.action)
 			end
 		end
-		if #menu.actions > 0 then
+		if #s.menu.actions > 0 then
 			s.mode = "menu"
-			s.menu = menu
 		else
 			s.mode = "normal"
-			s.menu = nil
 		end
 	end
 	s.recalcTrigs = false

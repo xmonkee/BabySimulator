@@ -10,9 +10,22 @@ function Menu.new(self, actions)
 	-- progressing == 100 = action() -> selected
 	-- for single item
 	-- shown + z -> started
-	local o = {actions=actions or {}, selected=1, mode="shown", progress=0}
+	local o = {
+		actions=actions or {},
+		selected=1,
+		mode="shown",
+		progress=0,
+		waitRelease=false
+	}
 	setmetatable(o, self)
 	return o
+end
+
+function Menu.empty(self)
+	self.actions={}
+	self.selected=1
+	self.mode="shown"
+	self.progress=0
 end
 
 function Menu.add(self, action)
@@ -53,17 +66,16 @@ end
 
 function Menu.handleKeys(self)
 	-- return boolean indicating if caller can process other keystrokes
-	if self.mode == "shown" then
-		if #self.actions == 1 and btnp(4,10,5) then
-			self.mode = "started"
-			self.progress = 1
-		elseif btnp(4,10,5) then
-			self.mode = "selected"
+	if self.waitRelease then
+		if not btn(4) then self.waitRelease = false
+		else return true
 		end
+	end
+	if self.mode == "shown" and btn(4) then
+			self.mode = "selected"
 	elseif self.mode == "selected" then
 		if btn(4) then
 			self.mode = "started"
-			self.progress = 1
 		else
 			if btnp(0,10,5) then self:decSel() end
 			if btnp(1,10,5) then self:incSel() end
@@ -76,6 +88,7 @@ function Menu.handleKeys(self)
 			self.actions[self.selected].fn()
 			self.progress = 0
 			self.mode = "selected"
+			self.waitRelease=true
 			s.recalcTrigs = true
 		elseif not btn(4) or btn(1) or btn(2) or btn(3) or btn(5) then
 			self.mode = "selected"
