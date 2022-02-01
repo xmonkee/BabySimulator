@@ -4,13 +4,13 @@ handSprs = {
 	pdiap={spr=257,s=1}, --poop diaper
 	groc={spr=276,s=2},
 	ingr={spr=370,s=1},
-	food={spr=384,s=1},
+	food={spr=270,s=1},
 	trash={spr=278,s=2},
 }
 
 function initParent()
 	local parent = makeObj({
-		x=50,y=100,ospr=304,spr=304,sc=2,w=2,h=2,
+		x=50,y=50,ospr=304,spr=304,sc=2,w=2,h=2,
 		flip=0,lf=6,rt=10,up=14,dn=16,
 		vx=0,vy=0
 	})

@@ -1,11 +1,12 @@
 # BabySimulator
+
 TODOs:
 [x] faster movement
+[ ] add a table for temp storage
+[x] fix menus
 [ ] music
-[ ] fix menus
 [ ] coffee truck
 [ ] show zzz while sleeping
-[ ] add a table for temp storage
 [ ] refactor
 [ ] scoring
 [ ] work meetings
