@@ -10,7 +10,6 @@ function initTbl()
 		if hspr then
 			local x = l.x + 12
 			local y = l.y + 5
-			trace(hspr)
 			spr(hspr.spr,x,y,0,1,0,0,hspr.s,hspr.s)
 		end
 	end

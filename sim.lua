@@ -40,6 +40,7 @@ function initState()
 	s.p = initParent()
 	s.r = initResources()
 	s.go = false -- game over
+	s.goAt = 0
 	s.activeObj = nil
 	s.recalcTrigs = true
 	s.mode = "normal"
@@ -74,10 +75,15 @@ function animResets()
 	s.p.loc.spr=s.p.loc.ospr
 end
 
+function gameOver()
+	s.go = true
+	s.goAt = t
+end
+
 function updateLiveliness()
 	local babySad = s.b:sad()
-	if babySad then
-		s.go = true
+	if babySad and not s.go then
+		gameOver()
 		notify(babySad)
 	end
 end
@@ -97,6 +103,13 @@ function fireEvents()
 end
 
 function handleKeys()
+	if s.go then
+		if (t - s.goAt)/ticsPerMinute > 2 and btn(4) then
+			reset()
+		end
+		return
+	end
+
 	if s.mode == "menu" then
 		local returnControl = s.menu:handleKeys()
 		if not returnControl then return end
@@ -145,11 +158,11 @@ function update()
 	hour=(t/ticsPerHour) % 24
 	animResets()
 	updateLiveliness()
+	handleKeys()
 	if s.go then return end
 	updateTimeBasedStats()
 	calcActiveObj()
 	calcTriggers()
-	handleKeys()
 	fireEvents()
 end
 
@@ -201,10 +214,9 @@ function drawNotifications()
 end
 
 function drawGameOver()
-	if s.go then
-		rect(80,52,80,40,0)
-		print("GAME OVER", 92, 70, 5*(t/10%3))
-	end
+	if not s.go then return end
+	rect(80,52,80,40,0)
+	print("GAME OVER", 92, 70, 5*(t/10%3))
 end
 
 function drawFps()

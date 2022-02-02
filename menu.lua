@@ -75,7 +75,7 @@ function Menu.handleKeys(self)
 		else return true
 		end
 	end
-	if self.mode == "shown" and btnp(4) then
+	if self.mode == "shown" and btn(4) then
 			self.mode = "selected"
 	elseif self.mode == "selected" then
 		if btnp(4,10,0) then self.mode = "started" end
