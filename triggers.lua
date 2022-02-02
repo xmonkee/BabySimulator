@@ -109,24 +109,8 @@ function initTriggers()
 				s.p:hold("pdiap")
 			end)
 		}, Trigger{
-			name="sleep",
-			conds={emptyHand, function() return not s.b.asleep end},
-			action=Action("Put baby to sleep", 1, function()
-				if s.b.props.wake > 70 then
-					notify("Baby didn't sleep")
-				else
-					s.b:sleep()
-				end
-			end)
-		}, Trigger{
-			name="wake",
-			conds={emptyHand, function() return s.b.asleep end},
-			action=Action("Wake up baby", 2, function()
-					s.b:awake()
-			end)
-		}, Trigger{
 			name="play",
-			conds={emptyHand, function() return not s.b.asleep end},
+			conds={emptyHand},
 			action=Action("Play", 1, function()
 				s.b.props.love=min(100, s.b.props.love+50)
 			end)
