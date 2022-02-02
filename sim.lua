@@ -62,7 +62,7 @@ function initObjs()
 	objs.stove = makeObj({x=10,y=65,w=2,h=4,spr=341,sc=1})
 	objs.dstore = makeObj({x=160,y=15,w=4,h=4,spr=400,sc=1})
 	objs.gstore = makeObj({x=200,y=15,w=4,h=4,spr=400,sc=1})
-	objs.table = initTbl()
+	objs.tbl = initTbl()
 	objs.trash = initTrash()
 end
 

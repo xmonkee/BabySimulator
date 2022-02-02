@@ -184,4 +184,30 @@ function initTriggers()
 			end)
 		}
 	}
+
+	triggers.tbl = {
+		Trigger{
+			name="stash",
+			conds={notEmptyHand, function() return objs.tbl:isEmpty() end},
+			action=Action("Stash item",3, function()
+				objs.tbl:hold(s.p:drop())
+			end)
+		},
+		Trigger{
+			name="pick",
+			conds={emptyHand, function() return not objs.tbl:isEmpty() end},
+			action=Action("Pick up item",3, function()
+				s.p:hold(objs.tbl:drop())
+			end)
+		},
+		Trigger{
+			name="swap",
+			conds={notEmptyHand, function() return not objs.tbl:isEmpty() end},
+			action=Action("Swap items",3, function()
+				local temp = s.p:drop()
+				s.p:hold(objs.tbl:drop())
+				objs.tbl:hold(temp)
+			end)
+		}
+	}
 end

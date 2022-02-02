@@ -6,13 +6,29 @@ function initTbl()
 	function tbl.draw(self, isActive)
 		self:_draw(isActive)
 		local l = self.loc
-		local hspr = self.holding
+		local hspr = handSprs[self.holding]
 		if hspr then
-			local x = l.x + 10
-			local y = l.y + 10
-			spr(hspr,x,y,0,1,0,0,hspr.s,hspr.s)
+			local x = l.x + 12
+			local y = l.y + 5
+			trace(hspr)
+			spr(hspr.spr,x,y,0,1,0,0,hspr.s,hspr.s)
 		end
 	end
+
+	function tbl.isEmpty(self)
+		return not self.holding
+	end
+
+	function tbl.hold(self, item)
+		self.holding = item
+	end
+
+	function tbl.drop(self)
+		local r = self.holding
+		self.holding = nil
+		return r
+	end
+	
 	return tbl
 end
 	

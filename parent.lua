@@ -23,7 +23,9 @@ function initParent()
 		self._hand = item
 	end
 	function parent.drop(self, item)
+		local r = self._hand
 		self._hand = nil
+		return r
 	end
 	function parent.isHolding(self, item)
 		return self._hand == item
