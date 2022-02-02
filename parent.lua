@@ -67,6 +67,11 @@ function initParent()
 		else vx=0
 		end
 
+		if btnp(2) then self.loc.flip = 1 end
+		if btnp(3) then self.loc.flip = 0 end
+
+		if vx == 0 and vy == 0 then return end
+
 		local l = self.loc
 		local x,y,pbloc
 
