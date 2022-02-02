@@ -34,10 +34,14 @@ end
 
 function Menu.incSel(self)
 	self.selected = math.min(#self.actions, self.selected + 1)
+	self.mode = "selected"
+	self.progress=0
 end
 
 function Menu.decSel(self)
 	self.selected = math.max(1, self.selected - 1)
+	self.mode = "selected"
+	self.progress=0
 end
 
 function Menu.drawLabel(self,label,x,y,selected)
@@ -55,11 +59,11 @@ function Menu.drawLabel(self,label,x,y,selected)
 end
 
 function Menu.draw(self)
-	local x=math.min(s.p.loc.x,168)
+	local x=max(5,min(s.p.loc.x,168))
 	local ys=s.p.loc.y-(#self.actions*8)-2
-	if ys < 0 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
+	if ys < 20 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
 	for i,action in pairs(self.actions) do
-		local y=ys+(i-1)*8
+		local y=ys+(i-1)*9
 		self:drawLabel(action.label,x,y,self.mode ~= "shown" and self.selected==i)
 	end
 end
@@ -71,18 +75,13 @@ function Menu.handleKeys(self)
 		else return true
 		end
 	end
-	if self.mode == "shown" and btn(4) then
+	if self.mode == "shown" and btnp(4) then
 			self.mode = "selected"
 	elseif self.mode == "selected" then
-		if btn(4) then
-			self.mode = "started"
-		else
-			if btnp(0,10,5) then self:decSel() end
-			if btnp(1,10,5) then self:incSel() end
-			if btnp(2,10,5) or btnp(3,10,5) or btnp(5,10,5) then
-				self.mode = "shown"
-			end
-		end
+		if btnp(4,10,0) then self.mode = "started" end
+		if btnp(0) then self:decSel() end
+		if btnp(1) then self:incSel() end
+		if btnp(2) or btnp(3) or btnp(5) then self.mode = "shown" end
 	elseif self.mode == "started" then
 		if self.progress >= 100 then
 			self.actions[self.selected].fn()
@@ -90,11 +89,16 @@ function Menu.handleKeys(self)
 			self.mode = "selected"
 			self.waitRelease=true
 			s.recalcTrigs = true
-		elseif not btn(4) or btn(1) or btn(2) or btn(3) or btn(5) then
-			self.mode = "selected"
-			self.progress = 0
-		else -- only btn(4)
-			self.progress = self.progress + self.actions[self.selected].rate
+		else
+			if btnp(0) then self:decSel() end
+			if btnp(1) then self:incSel() end
+			if btn(2) or btn(3) or btn(5) then
+				self.mode = "selected"
+				self.progress = 0
+			end
+			if btn(4) then
+				self.progress = self.progress + self.actions[self.selected].rate
+			end
 		end
 	end
 	return self.mode == "shown" or #self.actions == 1
