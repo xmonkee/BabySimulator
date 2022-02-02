@@ -50,64 +50,49 @@ function initParent()
 		print(s.r.money, x, 1, colors.label)
 	end
 
-	local dx, dy = 0, 0
-	local function decelerateX()
-		if dx < -0.2 then dx = dx + 0.2
-		elseif dx < -0.1 then dx = dx + 0.1
-		elseif dx > 0.2 then dx = dx - 0.2
-		elseif dx > 0.1 then dx = dx - 0.1
-		else dx = 0
-		end
-	end
-	local function decelerateY()
-		-- if dy < -0.2 then dy = dy + 0.2
-		if dy < -0.1 then dy = dy + 0.1
-		-- elseif dy > 0.2 then dy = dy - 0.2
-		elseif dy > 0.1 then dy = dy - 0.1
-		else dy = 0
-		end
-	end
-
+	local vx, vy = 0, 0
 	function parent.handleKeys(self)
-		if btn(0) then dy=max(-2,dy-.1) elseif btn(1) then dy=min(2,dy+.1) else decelerateY() end
-		if btn(2) then dx=max(-2,dx-.1) elseif btn(3) then dx=min(2,dx+.1) else decelerateX() end
-		if btnp(2) then self.loc.flip = 1 end
-		if btnp(3) then self.loc.flip = 0 end
-		if dx ~= 0 or dy ~= 0 then self:mv() end
-	end
 
+		if btn(0) then vy=max(-2,vy-.1)
+		elseif btn(1) then vy=min(2,vy+.1)
+		elseif vy>0.1 then vy=vy-0.1
+		elseif vy<-0.1 then vy=vy+0.1
+		else vy=0
+		end
 
-	function parent.mv(self)
+		if btn(2) then vx=max(-2,vx-.1)
+		elseif btn(3) then vx=min(2,vx+.1)
+		elseif vx>0.1 then vx=vx-0.1
+		elseif vx<-0.1 then vx=vx+0.1
+		else vx=0
+		end
+
 		local l = self.loc
 		local x,y,pbloc
 
-		x=l.x+dx
+		-- Check if x is blocked
+		x=l.x+vx
 		y=l.y
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then dx=-dx/4	end
+		if anyCollisions(pbloc, objs) then vx=-vx/8	end -- small bounce
 
+		-- Check if y is blocked
 		x=l.x
-		y=l.y+dy
+		y=l.y+vy
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then dy=-dy/4	end
+		if anyCollisions(pbloc, objs) then vy=-vy/8	end -- small bounce
 
-		x=l.x+dx
-		y=l.y+dy
+		-- Check if x AND y is blocked even if individually unblocked
+		-- (heading into a protruding edge)
+		x=l.x+vx
+		y=l.y+vy
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then dx,dy=0,0	end
+		if anyCollisions(pbloc, objs) then vx,vy=0,0	end
 
-		l.x = l.x+dx
-		l.y = l.y+dy
+		l.x = l.x+vx
+		l.y = l.y+vy
 
 		l.spr = l.ospr + ((t//10)%2 + 1)*2 -- walking animation
-		--if dx<0 then l.flip=1 elseif dx>0 then l.flip=0 end
-	end
-
-	parent.adj = adjMetric
-
-	function parent.updateTimeBasedStats(self)
-		self:adj("enr",-30/ticsPerHour)
-		self:adj("hpy",-10/ticsPerHour)
 	end
 
 	return parent
