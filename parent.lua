@@ -75,15 +75,15 @@ function initParent()
 
 	function parent.mv(self)
 		local l = self.loc
-		local x,y=l.x+dx,l.y+dy
+		local x=l.x+dx
+		local y=l.y+dy
 		local pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if not anyCollisions(pbloc, objs) then
-			l.x=math.max(0, math.min(x, 210))
-			l.y=math.max(10, math.min(y, 100))
-		else
+		if anyCollisions(pbloc, objs) then
 			dx,dy=0,0	
+		else
+			l.x,l.y = x,y
 		end
-		l.spr = l.ospr + ((t//10)%2 + 1)*2
+		l.spr = l.ospr + ((t//10)%2 + 1)*2 -- walking animation
 		if dx<0 then l.flip=1 elseif dx>0 then l.flip=0 end
 	end
 

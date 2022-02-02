@@ -122,6 +122,9 @@ function anyCollisions(bloc, objs)
 	if solid(bloc.x1,bloc.y1) or solid(bloc.x2,bloc.y1) or solid(bloc.x1,bloc.y2) or solid(bloc.x2,bloc.y2) then
 		return true
 	end
+	if bloc.x1 < 0 or bloc.x2 > 210 or bloc.y1 < 10 or bloc.y2 > 130 then
+		return true
+	end
 	return false
 end
 
