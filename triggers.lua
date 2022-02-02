@@ -148,7 +148,7 @@ function initTriggers()
 			end)
 		}, Trigger{
 			name="throw",
-			conds={notEmptyHand},
+			conds={notEmptyHand, function() return not s.p:isHolding("trash") end},
 			action=Action("Throw", 4, function()
 				if s.r.trash >= objs.trash.maxTrash then
 					notify("Trash is full")
