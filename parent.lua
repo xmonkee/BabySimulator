@@ -71,22 +71,36 @@ function initParent()
 	function parent.handleKeys(self)
 		if btn(0) then dy=max(-2,dy-.1) elseif btn(1) then dy=min(2,dy+.1) else decelerateY() end
 		if btn(2) then dx=max(-2,dx-.1) elseif btn(3) then dx=min(2,dx+.1) else decelerateX() end
+		if btnp(2) then self.loc.flip = 1 end
+		if btnp(3) then self.loc.flip = 0 end
 		if dx ~= 0 or dy ~= 0 then self:mv() end
 	end
 
 
 	function parent.mv(self)
 		local l = self.loc
-		local x=l.x+dx
-		local y=l.y+dy
-		local pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then
-			dx,dy=0,0	
-		else
-			l.x,l.y = x,y
-		end
+		local x,y,pbloc
+
+		x=l.x+dx
+		y=l.y
+		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
+		if anyCollisions(pbloc, objs) then dx=-dx/4	end
+
+		x=l.x
+		y=l.y+dy
+		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
+		if anyCollisions(pbloc, objs) then dy=-dy/4	end
+
+		x=l.x+dx
+		y=l.y+dy
+		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
+		if anyCollisions(pbloc, objs) then dx,dy=0,0	end
+
+		l.x = l.x+dx
+		l.y = l.y+dy
+
 		l.spr = l.ospr + ((t//10)%2 + 1)*2 -- walking animation
-		if dx<0 then l.flip=1 elseif dx>0 then l.flip=0 end
+		--if dx<0 then l.flip=1 elseif dx>0 then l.flip=0 end
 	end
 
 	parent.adj = adjMetric
