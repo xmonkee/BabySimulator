@@ -127,12 +127,14 @@ function initTriggers()
 		}, Trigger{
 			name="play",
 			conds={emptyHand, function() return not s.b.asleep end},
-			action=Action("Play", 1, function() s.b:adj("love", 20) end)
+			action=Action("Play", 1, function()
+				s.b.props.love=min(100, s.b.props.love+50)
+			end)
 		}, Trigger{
 			name="Feed",
 			conds={holding("food")},
 			action=Action("Feed baby", 1.5, function()
-				s.b:adj("full",30)
+				s.b.props.full=min(100, s.b.props.full+30)
 				s.p:drop()
 			end)
 		}

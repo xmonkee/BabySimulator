@@ -31,13 +31,6 @@ function initResources()
 		diap=2,
 		trash=2
 	}
-	setmetatable(resources, {
-		__index={
-			adj=function(self,r,val)
-				self[r] = math.max(0, self[r]+val)
-			end
-		}
-	})
 	return resources
 end
 
@@ -91,7 +84,6 @@ end
 
 function updateTimeBasedStats()
 	s.b:updateTimeBasedStats()
-	s.p:updateTimeBasedStats()
 end
 
 function notify(notification)

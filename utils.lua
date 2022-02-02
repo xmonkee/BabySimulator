@@ -10,12 +10,6 @@ function solid(x,y)
 	return SOLIDS[mget(x//8,y//8)]
 end
 
-function adjMetric(self,metric,val)
-	local nval = self.props[metric]+val
-	nval = math.max(0,math.min(100,nval))
-	self.props[metric]=nval
-end
-
 function calcBloc(obj)
 	local loc = obj.loc
 	return {
