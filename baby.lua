@@ -19,7 +19,7 @@ function initBaby()
 	function baby.sleep(self)
 		self.asleep=true
 		self.sleptAt = t
-		self:adj("wake", 40)
+		self.props.wake = min(100,self.props.wake+40)
 		self.loc.spr=self.loc.ospr+self.loc.w
 	end
 
@@ -62,12 +62,12 @@ function initBaby()
 		end
 	end
 
-	baby.adj = adjMetric
-
 	function baby.updateTimeBasedStats(self)
-		self:adj("full",-50/ticsPerHour)
-		self:adj("wake",-30/ticsPerHour)
-		self:adj("love",-30/ticsPerHour)
+		local p = self.props
+		local TPH = ticsPerHour
+		p.full = max(0,p.full-50/TPH)
+		p.wake = max(0,p.wake-30/TPH)
+		p.love = max(0,p.love-30/TPH)
 	end
 
 	function baby.fireEvents(self)
