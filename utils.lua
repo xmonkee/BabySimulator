@@ -22,15 +22,18 @@ end
 
 function _objDraw(self, active)
 	local loc = self.loc
-	--if active then
-		--rectb(loc.x-1,loc.y-1,loc.w*loc.sc*8+1,loc.h*loc.sc*8+1,colors.label)
-		--withSwapAll(12, function()
-			--spr(loc.spr,loc.x-1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			--spr(loc.spr,loc.x+1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			--spr(loc.spr,loc.x-1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-			--spr(loc.spr,loc.x+1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
-		--end)
-	--end
+	if active then
+		withSwapAll(12, function()
+			spr(loc.spr,loc.x-1,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x+1,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x-1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x+1,loc.y-1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x-1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+			spr(loc.spr,loc.x+1,loc.y+1,loc.zero,loc.sc,0,0,loc.w,loc.h)
+		end)
+	end
 	spr(loc.spr,loc.x,loc.y,loc.zero,loc.sc,0,0,loc.w,loc.h)
 end
 
@@ -50,31 +53,16 @@ function makeObj(loc)
 	return obj
 end
 
-function withSwapAll(newi, f) -- Swap colors and do f()
-	-- newi is the palette index of the color you want to swap in
-	local oldc = {}
-	local newc = peek4(PALETTE_MAP*2+newi) -- get the color at newi
-	for i = 0,15 do
-		-- i is the palette index of the color in the sprite to change
-		oldc[i] = peek4(PALETTE_MAP*2+i) -- save the original color
-		if i ~= 12 then -- spare whites
-			poke4(PALETTE_MAP*2+i, newc) -- write new color at i
-		end
-	end
-		f() -- do the thing
-	for i = 0,15 do
-		poke4(PALETTE_MAP*2+i, oldc[i]) -- restore oldcinal color at i
-	end
+function withSwapAll(newi, f)
+	for i = 0,15 do poke4(PALETTE_MAP*2+i, newi) end
+	f()
+	for i = 0,15 do poke4(PALETTE_MAP*2+i, i) end
 end
 
-function withSwap(oldi, newi, f) -- Swap colors and do f()
-	-- oldi is the palette index of the color in the sprite to change
-	-- newi is the palette index of the color you want to swap in
-	local oldc = peek4(PALETTE_MAP*2+oldi) -- save the original color
-	local newc = peek4(PALETTE_MAP*2+newi) -- get the color at newi
-	poke4(PALETTE_MAP*2+oldi, newc) -- write new color at oldi
-	f() -- do the thing
-	poke4(PALETTE_MAP*2+oldi, oldc) -- restore oldcinal color at oldi
+function withSwap(i, j, f)
+	poke4(PALETTE_MAP*2+i,j)
+	f()
+	poke4(PALETTE_MAP*2+i,i)
 end
 
 function collision(bloc1, bloc2)
@@ -110,13 +98,19 @@ function isAdjacent(bloc1, bloc2)
 end
 
 function anyCollisions(bloc, objs)
-	for _,obj in pairs(objs) do
+	for _,obj in pairs(objs) do -- objects
 		if collision(bloc, obj.bloc) then return true end
 	end
-	if solid(bloc.x1,bloc.y1) or solid(bloc.x2,bloc.y1) or solid(bloc.x1,bloc.y2) or solid(bloc.x2,bloc.y2) then
+	if solid(bloc.x1,bloc.y1) or -- walls
+		solid(bloc.x2,bloc.y1) or
+		solid(bloc.x1,bloc.y2) or
+		solid(bloc.x2,bloc.y2) then
 		return true
 	end
-	if bloc.x1 < 0 or bloc.x2 > 210 or bloc.y1 < 10 or bloc.y2 > 130 then
+	if bloc.x1 < 10 or -- edges
+		 bloc.x2 > 230 or
+		 bloc.y1 < 40 or
+		 bloc.y2 > 136 then
 		return true
 	end
 	return false
