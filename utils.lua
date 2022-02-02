@@ -75,16 +75,6 @@ function collision(bloc1, bloc2)
 	return true
 end
 
-function drawMeter(icon,x,y,val)
-	withFlashing(0, 1, function() return val < 20 end, function()
-		rect(x+8,y+2,15,4,0)
-	end)
-	withFlashing(colors.label, RED, function() return val < 20 end, function()
-		rect(x+9,y+3,math.ceil(val/100*14),2,colors.label)
-	end)
-	spr(icon,x,y,0)
-end
-
 function isAdjacent(bloc1, bloc2)
 	-- technically adjacent OR overlapping,
 	-- but we assume overlap is avoided elsewhere

@@ -1,6 +1,16 @@
+function drawMeter(icon,x,y,val)
+	withFlashing(0, 1, function() return val < 20 end, function()
+		rect(x+8,y+2,15,4,0)
+	end)
+	withFlashing(colors.label, RED, function() return val < 20 end, function()
+		rect(x+9,y+3,math.ceil(val/100*13),2,colors.label)
+	end)
+	spr(icon,x,y,0)
+end
+
 function initBaby()
 	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
-	baby.props = {full=40, love=40}
+	baby.props = {full=100, love=100}
 	baby.poops = 0
 	baby.poopedAt = 0
 	baby.mainColor = 4
@@ -48,8 +58,8 @@ function initBaby()
 	function baby.updateTimeBasedStats(self)
 		local p = self.props
 		local TPH = ticsPerHour
-		p.full = max(0,p.full-50/TPH)
-		p.love = max(0,p.love-30/TPH)
+		p.full = max(0,p.full-100/TPH)
+		p.love = max(0,p.love-100/TPH)
 	end
 
 	function baby.fireEvents(self)
