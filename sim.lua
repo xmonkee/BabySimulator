@@ -16,9 +16,7 @@ function initConstants()
 		menuItemProgress=6,
 		textShadow=0,
 	}
-	ticsPerSecond=1 --actually it's 60, game is sped up by 60x
-	ticsPerMinute=60*ticsPerSecond
-	ticsPerHour=60*ticsPerMinute
+	ticsPerHour=3600 -- starting speed, 1 tic = 1 sec
 
 	maxPoops = 3
 	costs = {diaps=30,groc=50}
@@ -104,7 +102,7 @@ end
 
 function handleKeys()
 	if s.go then
-		if (t - s.goAt)/ticsPerMinute > 2 and btn(4) then
+		if (t - s.goAt) > 120 and btn(4) then
 			reset()
 		end
 		return
@@ -154,7 +152,7 @@ end
 
 function update()
 	t=t+1
-	minute=(t/ticsPerMinute) % 60
+	minute=(t/ticsPerHour*60) % 60
 	hour=(t/ticsPerHour) % 24
 	animResets()
 	updateLiveliness()
