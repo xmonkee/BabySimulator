@@ -21,23 +21,23 @@ function initTriggers()
 	triggers.dshelf = {
 		Trigger{
 			name="takeDiap",
-			conds={emptyHand, function() return s.r.diap >= 1 end},
+			conds={emptyHand, function() return res.diap >= 1 end},
 			action=Action("Take diaper", 3, function()
-				s.r.diap = s.r.diap - 1
+				res.diap = res.diap - 1
 				players.parent:hold("diap")
 			end)
 		}, Trigger{
 			name="storeDiaps",
 			conds={holding("diaps")},
 			action=Action("Store diapers", 2, function()
-				s.r.diap = s.r.diap + 3
+				res.diap = res.diap + 3
 				players.parent:drop()
 			end)
 		}, Trigger{
 			name="storeDiap",
 			conds={holding("diap")},
 			action=Action("Store diaper", 3, function()
-				s.r.diap = s.r.diap + 1
+				res.diap = res.diap + 1
 				players.parent:drop()
 			end)
 		}
@@ -46,23 +46,23 @@ function initTriggers()
 	triggers.gshelf = {
 		Trigger{
 			name="takeIngr",
-			conds={emptyHand,function() return s.r.groc >= 1 end},
+			conds={emptyHand,function() return res.groc >= 1 end},
 			action=Action("Take ingredients", 3, function()
-				s.r.groc = s.r.groc - 1
+				res.groc = res.groc - 1
 				players.parent:hold("ingr")
 			end)
 		}, Trigger{
 			name="storeGrocs",
 			conds={holding("groc")},
 			action=Action("Store groceries", 2, function()
-				s.r.groc = s.r.groc + 3
+				res.groc = res.groc + 3
 				players.parent:drop()
 			end)
 		}, Trigger{
 			name="storeIngr",
 			conds={holding("ingr")},
 			action=Action("Store ingredients", 2, function()
-				s.r.groc = s.r.groc + 1
+				res.groc = res.groc + 1
 				players.parent:drop()
 			end)
 		}
@@ -71,10 +71,10 @@ function initTriggers()
 	triggers.dstore = {
 		Trigger{
 			name="buyDiaps",
-			conds={emptyHand, function() return s.r.money >= costs.diaps end},
+			conds={emptyHand, function() return res.money >= costs.diaps end},
 			action=Action("Buy diapers", 2, function()
 				players.parent:hold("diaps")
-				s.r.money = s.r.money - costs.diaps
+				res.money = res.money - costs.diaps
 			end)
 		}
 	}
@@ -82,10 +82,10 @@ function initTriggers()
 	triggers.gstore = {
 		Trigger{
 			name="buyGroc",
-			conds={emptyHand, function() return s.r.money >= costs.groc end},
+			conds={emptyHand, function() return res.money >= costs.groc end},
 			action=Action("Buy groceries", 2, function()
 				players.parent:hold("groc")
-				s.r.money = s.r.money - costs.groc
+				res.money = res.money - costs.groc
 			end)
 		}
 	}
@@ -127,7 +127,7 @@ function initTriggers()
 		Trigger{
 			name="work",
 			conds={emptyHand},
-			action=Action("Work", 1, function() s.r.money = s.r.money + 30 end)
+			action=Action("Work", 1, function() res.money = res.money + 30 end)
 		}
 	}
 	triggers.trash = {
@@ -135,26 +135,26 @@ function initTriggers()
 			name="takeTrash",
 			conds={emptyHand},
 			action=Action("Take out trash", 2, function()
-				s.r.trashInHand = s.r.trash
-				s.r.trash = 0
+				res.trashInHand = res.trash
+				res.trash = 0
 				players.parent:hold("trash")
 			end)
 		}, Trigger{
 			name="putTrashBack",
 			conds={holding("trash")},
 			action=Action("Put trash back", 2, function()
-				s.r.trash = s.r.trashInHand
+				res.trash = res.trashInHand
 				players.parent:drop()
 			end)
 		}, Trigger{
 			name="throw",
 			conds={notEmptyHand, function() return not players.parent:isHolding("trash") end},
 			action=Action("Throw", 4, function()
-				if s.r.trash >= objs.trash.maxTrash then
+				if res.trash >= objs.trash.maxTrash then
 					notify("Trash is full")
 				else
 					players.parent:drop()
-					s.r.trash = s.r.trash + 1
+					res.trash = res.trash + 1
 				end
 			end)
 		}
@@ -166,7 +166,7 @@ function initTriggers()
 			conds={holding("trash")},
 			action=Action("Dump trash", 3, function()
 				players.parent:drop()
-				s.r.trashInHand=0
+				res.trashInHand=0
 			end)
 		}
 	}

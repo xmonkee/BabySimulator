@@ -17,30 +17,30 @@ function initConstants()
 		textShadow=0,
 	}
 	ticsPerHour=3600 -- starting speed, 1 tic = 1 sec
-
 	maxPoops = 3
 	costs = {diaps=30,groc=50}
 end
 
 function initResources()
-	local resources = {
+	res = {
 		money=50,
 		groc=2,
 		diap=2,
 		trash=2
 	}
-	return resources
 end
 
 function initState()
 	s = {}
-	s.r = initResources()
 	s.go = false -- game over
 	s.goAt = 0
 	s.activeObj = nil
 	s.recalcTrigs = true
 	s.mode = "normal"
-	s.menu = Menu:new()
+end
+
+function initMenu()
+	menu = Menu:new()
 end
 
 function initPlayers()
@@ -63,7 +63,9 @@ end
 
 function init()
 	initConstants()
+	initResources()
 	initState()
+	initMenu()
 	initPlayers()
 	initObjs()
 	initTriggers()
@@ -113,7 +115,7 @@ function handleKeys()
 	end
 
 	if s.mode == "menu" then
-		local returnControl = s.menu:handleKeys()
+		local returnControl = menu:handleKeys()
 		if not returnControl then return end
 	end
 	players.parent:handleKeys()
@@ -150,13 +152,13 @@ function calcTriggers()
 	if s.activeObj == nil or triggers[s.activeObj] == nil then
 		s.mode = "normal"
 	else
-		s.menu:empty()
+		menu:empty()
 		for tname, trigger in pairs(triggers[s.activeObj]) do
 			if trigger:triggered() then
-				s.menu:add(trigger.action)
+				menu:add(trigger.action)
 			end
 		end
-		if #s.menu.actions > 0 then
+		if #menu.actions > 0 then
 			s.mode = "menu"
 		else
 			s.mode = "normal"
@@ -214,12 +216,12 @@ function drawResources()
 	-- diapers
 	spr(260,objs.dshelf.loc.x+1,objs.dshelf.loc.y+1,0)
 	spr(260,objs.dstore.loc.x+20,objs.dstore.loc.y+15,0)
-	print("x"..s.r.diap, objs.dshelf.loc.x+11,objs.dshelf.loc.y+2, 15, false, 1, false)
+	print("x"..res.diap, objs.dshelf.loc.x+11,objs.dshelf.loc.y+2, 15, false, 1, false)
 
 	-- grocs
 	spr(268,objs.gshelf.loc.x+5,objs.gshelf.loc.y+1,0)
 	spr(268,objs.gstore.loc.x+22,objs.gstore.loc.y+14,0)
-	print("x"..s.r.groc, objs.gshelf.loc.x+11,objs.gshelf.loc.y+2, 15, false, 1, false)
+	print("x"..res.groc, objs.gshelf.loc.x+11,objs.gshelf.loc.y+2, 15, false, 1, false)
 end
 
 function drawNotifications()
@@ -256,7 +258,7 @@ function draw()
 	drawResources()
 	drawPlayers()
 	if s.mode == "menu" then
-		s.menu:draw()
+		menu:draw()
 	end
 	drawNotifications()
 	drawGameOver()

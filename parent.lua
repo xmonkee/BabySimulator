@@ -51,7 +51,7 @@ function initParent()
 		x = 214
 		spr(269,x,0, 0)
 		x = x + 8
-		print(s.r.money, x, 1, colors.label)
+		print(res.money, x, 1, colors.label)
 	end
 
 	local vx, vy = 0, 0

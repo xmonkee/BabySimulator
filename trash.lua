@@ -10,7 +10,7 @@ function initTrash()
 
 		local loc = self.loc
 		-- Draw trash meter
-		local h = math.ceil(s.r.trash/self.maxTrash*14)
+		local h = math.ceil(res.trash/self.maxTrash*14)
 		rect(loc.x-5,loc.y,4,16,0)
 		rect(loc.x-4,loc.y+15-h,2,h,12)
 	end
