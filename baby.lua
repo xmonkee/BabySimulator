@@ -60,6 +60,7 @@ function initBaby()
 		local TPH = ticsPerHour
 		p.full = max(0,p.full-100/TPH)
 		p.love = max(0,p.love-100/TPH)
+		self:randomWalk()
 	end
 
 	function baby.fireEvents(self)
@@ -67,6 +68,37 @@ function initBaby()
 			self:poop()
 			notify("Baby Pooped")
 		end
+	end
+
+	local vx, vy = 0, 0
+
+	local function setRandomDirection()
+		vx = 2 - math.random()*4
+		vy = 2 - math.random()*4
+	end
+
+	setRandomDirection()
+
+	function baby.randomWalk(self)
+		if isAdjacent(
+			self:calcBloc(),
+			players.parent:fullBloc()) then
+			return
+		end
+
+		local l = self.loc
+		local x,y,pbloc
+
+		x=l.x+vx*math.sin(t/32)
+		y=l.y+vy*math.cos(t/32)
+		pbloc = {x1=x,y1=y,x2=x+16,y2=y+16}
+		if anyCollisions(pbloc, "baby") then
+			setRandomDirection()
+		else
+			l.x = x
+			l.y = y
+		end
+		if (t % 120 == 0) then setRandomDirection() end
 	end
 
 	return baby

@@ -87,9 +87,15 @@ function isAdjacent(bloc1, bloc2)
 	return true
 end
 
-function anyCollisions(bloc, objs)
+function anyCollisions(bloc,playerName)
 	for _,obj in pairs(objs) do -- objects
-		if collision(bloc, obj.bloc) then return true end
+		if collision(bloc, obj:calcBloc()) then return true end
+	end
+	for name,player in pairs(players) do -- players
+		if playerName ~= name and
+			collision(bloc, player:calcBloc()) then
+			return true 
+		end
 	end
 	if solid(bloc.x1,bloc.y1) or -- walls
 		solid(bloc.x2,bloc.y1) or

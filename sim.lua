@@ -45,9 +45,14 @@ function initState()
 	s.menu = Menu:new()
 end
 
+function initPlayers()
+	players = {}
+	players.baby = s.b
+	players.parent = s.p
+end
+
 function initObjs()
 	objs = {}
-	objs.baby = s.b
 	objs.work = makeObj({x=100,y=15,w=4,h=4,spr=408,sc=1})
 	objs.dshelf = makeObj({x=10,y=15,w=4,h=4,spr=404,sc=1})
 	objs.gshelf = makeObj({x=56,y=15,w=4,h=4,spr=404,sc=1})
@@ -61,6 +66,7 @@ end
 function init()
 	initConstants()
 	initState()
+	initPlayers()
 	initObjs()
 	initTriggers()
 end
@@ -125,6 +131,13 @@ function calcActiveObj()
 			s.activeObj = objName
 		end
 	end
+	for playerName,player in pairs(players) do
+		if playerName ~= "parent" then
+			if isAdjacent(player:calcBloc(), players.parent:fullBloc()) then
+				s.activeObj = playerName
+			end
+		end
+	end
 	if s.activeObj ~= prevActive then
 		s.recalcTrigs = true
 	end
@@ -154,10 +167,10 @@ function update()
 	t=t+1
 	minute=(t/ticsPerHour*60) % 60
 	hour=(t/ticsPerHour) % 24
-	animResets()
-	updateLiveliness()
 	handleKeys()
 	if s.go then return end
+	animResets()
+	updateLiveliness()
 	updateTimeBasedStats()
 	calcActiveObj()
 	calcTriggers()
@@ -190,6 +203,11 @@ function drawObjs()
 	end
 end
 
+function drawPlayers()
+	players.baby:draw(s.activeObj == "baby")
+	players.parent:draw()
+end
+
 function drawResources()
 	-- diapers
 	spr(260,objs.dshelf.loc.x+1,objs.dshelf.loc.y+1,0)
@@ -214,7 +232,8 @@ end
 function drawGameOver()
 	if not s.go then return end
 	rect(80,52,80,40,0)
-	print("GAME OVER", 92, 70, 5*(t/10%3))
+	print("GAME OVER", 92, 64, 5*(t/10%3))
+	print("Score: "..s.goAt,92, 72, 5*(t/10%3))
 end
 
 function drawFps()
@@ -233,7 +252,7 @@ function draw()
 	drawClock()
 	drawObjs()
 	drawResources()
-	s.p:draw()
+	drawPlayers()
 	if s.mode == "menu" then
 		s.menu:draw()
 	end

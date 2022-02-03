@@ -14,6 +14,10 @@ function initParent()
 		flip=0,lf=6,rt=10,up=14,dn=16,
 		vx=0,vy=0
 	})
+	function parent.fullBloc(self)
+		local l = self.loc
+		return {x1=l.x,y1=l.y,x2=l.x+20,y2=l.y+32}
+	end
 	parent.props = {enr=100, hpy=100}
 	parent._hand = nil
 	function parent.emptyHanded(self)
@@ -79,20 +83,20 @@ function initParent()
 		x=l.x+vx
 		y=l.y
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then vx=-vx/8	end -- small bounce
+		if anyCollisions(pbloc, "parent") then vx=-vx/8	end -- small bounce
 
 		-- Check if y is blocked
 		x=l.x
 		y=l.y+vy
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then vy=-vy/8	end -- small bounce
+		if anyCollisions(pbloc, "parent") then vy=-vy/8	end -- small bounce
 
 		-- Check if x AND y is blocked even if individually unblocked
 		-- (heading into a protruding edge)
 		x=l.x+vx
 		y=l.y+vy
 		pbloc = {x1=x+l.lf*l.sc,y1=y+l.up*l.sc,x2=x+l.rt*l.sc,y2=y+l.dn*l.sc}
-		if anyCollisions(pbloc, objs) then vx,vy=0,0	end
+		if anyCollisions(pbloc, "parent") then vx,vy=0,0	end
 
 		l.x = l.x+vx
 		l.y = l.y+vy
