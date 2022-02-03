@@ -125,12 +125,7 @@ function calcActiveObj()
 	local prevActive = s.activeObj
 
 	s.activeObj = nil
-	local parentBloc = s.p:calcBloc()
-	for objName,obj in pairs(objs) do
-		if isAdjacent(obj.bloc, parentBloc) then
-			s.activeObj = objName
-		end
-	end
+
 	for playerName,player in pairs(players) do
 		if playerName ~= "parent" then
 			if isAdjacent(player:calcBloc(), players.parent:fullBloc()) then
@@ -138,9 +133,18 @@ function calcActiveObj()
 			end
 		end
 	end
+
+	local parentBloc = s.p:calcBloc()
+	for objName,obj in pairs(objs) do
+		if isAdjacent(obj.bloc, parentBloc) then
+			s.activeObj = objName
+		end
+	end
+
 	if s.activeObj ~= prevActive then
 		s.recalcTrigs = true
 	end
+
 end
 
 function calcTriggers()
