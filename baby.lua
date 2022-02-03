@@ -94,11 +94,12 @@ function initBaby()
 		pbloc = {x1=x,y1=y,x2=x+16,y2=y+16}
 		if anyCollisions(pbloc, "baby") then
 			setRandomDirection()
+			return
 		else
 			l.x = x
 			l.y = y
+			if (t % 120 == 0) then setRandomDirection() end
 		end
-		if (t % 120 == 0) then setRandomDirection() end
 	end
 
 	return baby
