@@ -10,6 +10,8 @@ function initConstants()
 	colors={
 		label=12,
 		meter=5,
+		yellow=4,
+		white=12,
 		menuItem=10,
 		menuItemSelected=9,
 		menuItemText=12,
@@ -17,7 +19,6 @@ function initConstants()
 		textShadow=0,
 	}
 	ticsPerHour=3600 -- starting speed, 1 tic = 1 sec
-	maxPoops = 3
 	costs = {diaps=30,groc=50}
 end
 
@@ -214,14 +215,18 @@ end
 
 function drawResources()
 	-- diapers
-	spr(260,objs.dshelf.loc.x+1,objs.dshelf.loc.y+1,0)
-	spr(260,objs.dstore.loc.x+20,objs.dstore.loc.y+15,0)
+	spr(260,objs.dshelf.loc.x+1,objs.dshelf.loc.y+1,0) -- on shelf
 	print("x"..res.diap, objs.dshelf.loc.x+11,objs.dshelf.loc.y+2, 15, false, 1, false)
+	spr(260,objs.dstore.loc.x+20,objs.dstore.loc.y+15,0) -- on shop
+	print("$", objs.dstore.loc.x+6,objs.dstore.loc.y+12,colors.white,false,1,false)
+	print(costs.diaps, objs.dstore.loc.x+5,objs.dstore.loc.y+18,colors.white,true,1,true)
 
 	-- grocs
-	spr(268,objs.gshelf.loc.x+5,objs.gshelf.loc.y+1,0)
-	spr(268,objs.gstore.loc.x+22,objs.gstore.loc.y+14,0)
+	spr(268,objs.gshelf.loc.x+5,objs.gshelf.loc.y+1,0) -- on shelf
 	print("x"..res.groc, objs.gshelf.loc.x+11,objs.gshelf.loc.y+2, 15, false, 1, false)
+	spr(268,objs.gstore.loc.x+22,objs.gstore.loc.y+14,0) -- on shop
+	print("$", objs.gstore.loc.x+6,objs.gstore.loc.y+12,colors.white,false,1,false)
+	print(costs.groc, objs.gstore.loc.x+5,objs.gstore.loc.y+18,colors.white,true,1,true)
 end
 
 function drawNotifications()

@@ -29,7 +29,7 @@ function initTriggers()
 		}, Trigger{
 			name="storeDiaps",
 			conds={holding("diaps")},
-			action=Action("Store diapers", 2, function()
+			action=Action("Store diapers", 3, function()
 				res.diap = res.diap + 3
 				players.parent:drop()
 			end)
@@ -54,14 +54,14 @@ function initTriggers()
 		}, Trigger{
 			name="storeGrocs",
 			conds={holding("groc")},
-			action=Action("Store groceries", 2, function()
+			action=Action("Store groceries", 3, function()
 				res.groc = res.groc + 3
 				players.parent:drop()
 			end)
 		}, Trigger{
 			name="storeIngr",
 			conds={holding("ingr")},
-			action=Action("Store ingredients", 2, function()
+			action=Action("Store ingredients", 3, function()
 				res.groc = res.groc + 1
 				players.parent:drop()
 			end)
@@ -72,7 +72,7 @@ function initTriggers()
 		Trigger{
 			name="buyDiaps",
 			conds={emptyHand, function() return res.money >= costs.diaps end},
-			action=Action("Buy diapers", 2, function()
+			action=Action("Buy diapers", 3, function()
 				players.parent:hold("diaps")
 				res.money = res.money - costs.diaps
 			end)
@@ -83,7 +83,7 @@ function initTriggers()
 		Trigger{
 			name="buyGroc",
 			conds={emptyHand, function() return res.money >= costs.groc end},
-			action=Action("Buy groceries", 2, function()
+			action=Action("Buy groceries", 3, function()
 				players.parent:hold("groc")
 				res.money = res.money - costs.groc
 			end)
@@ -104,21 +104,21 @@ function initTriggers()
 		Trigger{
 			name="changeDiap",
 			conds={holding("diap"), function() return players.baby.poops >= 1 end},
-			action=Action("Change diaper", 1.5, function()
+			action=Action("Change diaper", 2, function()
 				players.baby.poops = 0
 				players.parent:hold("pdiap")
 			end)
 		}, Trigger{
 			name="play",
 			conds={emptyHand},
-			action=Action("Play", 1, function()
-				players.baby.props.love=min(100, players.baby.props.love+50)
+			action=Action("Play with baby", 2, function()
+				players.baby.props.love=min(100, players.baby.props.love+40)
 			end)
 		}, Trigger{
 			name="Feed",
 			conds={holding("food")},
-			action=Action("Feed baby", 1.5, function()
-				players.baby.props.full=min(100, players.baby.props.full+30)
+			action=Action("Feed baby", 2, function()
+				players.baby.props.full=min(100, players.baby.props.full+40)
 				players.parent:drop()
 			end)
 		}
@@ -134,7 +134,7 @@ function initTriggers()
 		Trigger{
 			name="takeTrash",
 			conds={emptyHand},
-			action=Action("Take out trash", 2, function()
+			action=Action("Take out trash", 3, function()
 				res.trashInHand = res.trash
 				res.trash = 0
 				players.parent:hold("trash")
@@ -142,7 +142,7 @@ function initTriggers()
 		}, Trigger{
 			name="putTrashBack",
 			conds={holding("trash")},
-			action=Action("Put trash back", 2, function()
+			action=Action("Put trash back", 3, function()
 				res.trash = res.trashInHand
 				players.parent:drop()
 			end)
@@ -175,21 +175,21 @@ function initTriggers()
 		Trigger{
 			name="stash",
 			conds={notEmptyHand, function() return objs.tbl:isEmpty() end},
-			action=Action("Stash item",3, function()
+			action=Action("Stash item", 4, function()
 				objs.tbl:hold(players.parent:drop())
 			end)
 		},
 		Trigger{
 			name="pick",
 			conds={emptyHand, function() return not objs.tbl:isEmpty() end},
-			action=Action("Pick up item",3, function()
+			action=Action("Pick up item", 4, function()
 				players.parent:hold(objs.tbl:drop())
 			end)
 		},
 		Trigger{
 			name="swap",
 			conds={notEmptyHand, function() return not objs.tbl:isEmpty() end},
-			action=Action("Swap items",3, function()
+			action=Action("Swap items",4, function()
 				local temp = players.parent:drop()
 				players.parent:hold(objs.tbl:drop())
 				objs.tbl:hold(temp)

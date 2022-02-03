@@ -14,12 +14,13 @@ function initBaby()
 	baby.poops = 0
 	baby.poopedAt = 0
 	baby.mainColor = 4
+	baby.maxPoops = 3
 
 	function baby.sad(self)
 		local p = self.props
 		if p.full <= 0 then return "Baby got too hungry" end
 		if p.love <= 0 then return "Baby got too sad" end
-		if self.poops >= 3 then return "Baby got too dirty" end
+		if self.poops >= self.maxPoops then return "Baby got too dirty" end
 		return false
 	end
 
@@ -35,7 +36,7 @@ function initBaby()
 		local loc = self.loc
 
 		-- Draw meters
-		local x = 120
+		local x = 145
 		local y = 0
 		spr(263,x,y,0) -- baby face
 		x = x + 10
