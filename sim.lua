@@ -34,8 +34,6 @@ end
 
 function initState()
 	s = {}
-	s.b = initBaby()
-	s.p = initParent()
 	s.r = initResources()
 	s.go = false -- game over
 	s.goAt = 0
@@ -47,8 +45,8 @@ end
 
 function initPlayers()
 	players = {}
-	players.baby = s.b
-	players.parent = s.p
+	players.baby = initBaby()
+	players.parent = initParent()
 end
 
 function initObjs()
@@ -76,7 +74,7 @@ init()
 -----------------------------------------------------------------
 
 function animResets()
-	s.p.loc.spr=s.p.loc.ospr
+	players.parent.loc.spr=players.parent.loc.ospr
 end
 
 function gameOver()
@@ -85,7 +83,7 @@ function gameOver()
 end
 
 function updateLiveliness()
-	local babySad = s.b:sad()
+	local babySad = players.baby:sad()
 	if babySad and not s.go then
 		gameOver()
 		notify(babySad)
@@ -93,7 +91,7 @@ function updateLiveliness()
 end
 
 function updateTimeBasedStats()
-	s.b:updateTimeBasedStats()
+	players.baby:updateTimeBasedStats()
 end
 
 function notify(notification)
@@ -102,7 +100,7 @@ function notify(notification)
 end
 
 function fireEvents()
-	s.b:fireEvents()
+	players.baby:fireEvents()
 	objs.trash:fireEvents()
 end
 
@@ -118,7 +116,7 @@ function handleKeys()
 		local returnControl = s.menu:handleKeys()
 		if not returnControl then return end
 	end
-	s.p:handleKeys()
+	players.parent:handleKeys()
 end
 
 function calcActiveObj()
@@ -134,7 +132,7 @@ function calcActiveObj()
 		end
 	end
 
-	local parentBloc = s.p:calcBloc()
+	local parentBloc = players.parent:calcBloc()
 	for objName,obj in pairs(objs) do
 		if isAdjacent(obj.bloc, parentBloc) then
 			s.activeObj = objName

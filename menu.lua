@@ -59,9 +59,9 @@ function Menu.drawLabel(self,label,x,y,selected)
 end
 
 function Menu.draw(self)
-	local x=max(5,min(s.p.loc.x,168))
-	local ys=s.p.loc.y-(#self.actions*8)-2
-	if ys < 20 then ys=s.p.loc.y+s.p.loc.h*s.p.loc.sc*8+2 end
+	local x=max(5,min(players.parent.loc.x,168))
+	local ys=players.parent.loc.y-(#self.actions*8)-2
+	if ys < 20 then ys=players.parent.loc.y+players.parent.loc.h*players.parent.loc.sc*8+2 end
 	for i,action in pairs(self.actions) do
 		local y=ys+(i-1)*9
 		self:drawLabel(action.label,x,y,self.mode ~= "shown" and self.selected==i)
