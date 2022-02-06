@@ -70,6 +70,7 @@ function init()
 	initPlayers()
 	initObjs()
 	initTriggers()
+	music(0)
 end
 
 init()
@@ -83,6 +84,7 @@ end
 function gameOver()
 	s.go = true
 	s.goAt = t
+	music()
 end
 
 function updateLiveliness()

@@ -25,6 +25,7 @@ function initBaby()
 	end
 
 	function baby.poop(self)
+		sfx(34,"C-4",10,3,15,0)
 		self.poops = self.poops + 1
 		self.poopedAt=t
 	end

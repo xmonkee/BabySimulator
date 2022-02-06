@@ -84,6 +84,7 @@ function Menu.handleKeys(self)
 		if btnp(2) or btnp(3) or btnp(5) then self.mode = "shown" end
 	elseif self.mode == "started" then
 		if self.progress >= 100 then
+			sfx(32,"C-4",30,2,15,0)
 			self.actions[self.selected].fn()
 			self.progress = 0
 			self.mode = "selected"

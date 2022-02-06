@@ -44,3 +44,4 @@ luac.out
 
 # tic80
 .local
+build/

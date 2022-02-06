@@ -112,9 +112,8 @@ function anyCollisions(bloc,playerName)
 	return false
 end
 
-
 function Action(label, rate, fn)
-	local action = {label=label, rate=rate,fn=fn}
+	local action = {label=label, rate=rate, fn=fn}
 	return action
 end
 
