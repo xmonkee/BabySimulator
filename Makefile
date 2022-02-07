@@ -1,12 +1,16 @@
-all: build/combined.tic
+NAME="BabySimulator"
+all: build/${NAME}.tic build/${NAME}.zip
 
-build/combined.lua: *.lua
+build/${NAME}.lua: *.lua
 	mkdir -p build
-	python3 combine.py main.lua > build/combined.lua
+	python3 combine.py main.lua > build/${NAME}.lua
 
-build/combined.tic: build/combined.lua
-	rm -f ./build/combined.tic
-	tic80 --cli --fs ./build --cmd="load combined.lua & save combined.tic"
+build/${NAME}.tic: build/${NAME}.lua
+	rm -f ./build/${NAME}.tic
+	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & save ${NAME}.tic"
+
+build/${NAME}.zip: build/${NAME}.lua
+	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & export html ${NAME}.zip"
 
 clean:
 	rm -r build/
