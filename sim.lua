@@ -19,7 +19,8 @@ function initConstants()
 		menuItemProgress=6,
 		textShadow=0,
 	}
-	ticsPerHour=3600 -- starting speed, 1 tic = 1 sec
+	ticsPerMin=60
+	ticsPerHour=ticsPerMin*60 -- starting speed, 1 tic = 1 sec
 	costs = {diaps=30,groc=50}
 end
 

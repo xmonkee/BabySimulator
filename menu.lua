@@ -98,7 +98,7 @@ function Menu.handleKeys(self)
 				self.progress = 0
 			end
 			if btn(4) then
-				self.progress = self.progress + self.actions[self.selected].rate
+				self.progress = self.progress+self.actions[self.selected].rate/ticsPerMin*60*3
 			end
 		end
 	end

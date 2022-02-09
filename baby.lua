@@ -66,7 +66,7 @@ function initBaby()
 	end
 
 	function baby.fireEvents(self)
-		if math.random() < 0.007*(t - self.poopedAt)/ticsPerHour then
+		if math.random() < 0.003*(t - self.poopedAt)/ticsPerHour then
 			self:poop()
 			notify("Baby Pooped")
 		end
