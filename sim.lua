@@ -1,3 +1,4 @@
+require "menu"
 require "utils"
 require "baby"
 require "parent"
@@ -52,12 +53,12 @@ end
 
 function initObjs()
 	objs = {}
-	objs.work = makeObj({x=100,y=15,w=4,h=4,spr=408,sc=1})
-	objs.dshelf = makeObj({x=10,y=15,w=4,h=4,spr=404,sc=1})
-	objs.gshelf = makeObj({x=56,y=15,w=4,h=4,spr=404,sc=1})
-	objs.stove = makeObj({x=10,y=65,w=2,h=4,spr=341,sc=1})
-	objs.dstore = makeObj({x=160,y=15,w=4,h=4,spr=400,sc=1})
-	objs.gstore = makeObj({x=200,y=15,w=4,h=4,spr=400,sc=1})
+	objs.work = Obj:new({x=100,y=15,w=4,h=4,spr=408,sc=1})
+	objs.dshelf = Obj:new({x=10,y=15,w=4,h=4,spr=404,sc=1})
+	objs.gshelf = Obj:new({x=56,y=15,w=4,h=4,spr=404,sc=1})
+	objs.stove = Obj:new({x=10,y=65,w=2,h=4,spr=341,sc=1})
+	objs.dstore = Obj:new({x=160,y=15,w=4,h=4,spr=400,sc=1})
+	objs.gstore = Obj:new({x=200,y=15,w=4,h=4,spr=400,sc=1})
 	objs.tbl = initTbl()
 	objs.trash = initTrash()
 end
@@ -139,7 +140,7 @@ function calcActiveObj()
 
 	local parentBloc = players.parent:calcBloc()
 	for objName,obj in pairs(objs) do
-		if isAdjacent(obj.bloc, parentBloc) then
+		if isAdjacent(obj:calcBloc(), parentBloc) then
 			s.activeObj = objName
 		end
 	end

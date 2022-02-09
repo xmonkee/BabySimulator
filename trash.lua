@@ -1,6 +1,6 @@
 function initTrash()
-	local trash = makeObj({x=20,y=116,w=2,h=2,spr=274,sc=1})
-	local truck = makeObj({x=160,y=90,w=4,h=4,spr=343,sc=2,dn=16, up=5})
+	local trash = Obj:new({x=20,y=116,w=2,h=2,spr=274,sc=1})
+	local truck = Obj:new({x=160,y=90,w=4,h=4,spr=343,sc=2,dn=16, up=5})
 	trash.maxTrash = 5
 	trash.truck = nil
 

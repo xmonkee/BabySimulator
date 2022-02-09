@@ -9,7 +9,7 @@ handSprs = {
 }
 
 function initParent()
-	local parent = makeObj({
+	local parent = Obj:new({
 		x=50,y=50,ospr=304,spr=304,sc=2,w=2,h=2,
 		flip=0,lf=6,rt=10,up=14,dn=16,
 		vx=0,vy=0

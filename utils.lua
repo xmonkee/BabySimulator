@@ -1,5 +1,3 @@
-require "menu"
-
 PALETTE_MAP = 0x3FF0
 RED = 3
 SOLIDS = {[73]=1,[74]=1,[75]=1}  -- "solid" map sprites
@@ -10,8 +8,29 @@ function solid(x,y)
 	return SOLIDS[mget(x//8,y//8)]
 end
 
-function calcBloc(obj)
-	local loc = obj.loc
+Obj = {}
+Obj.__index = Obj
+
+function Obj:new(loc)
+	loc.zero = loc.zero or 0
+	local obj = {loc=loc}
+	setmetatable(obj, self)
+	return obj
+end
+
+
+function Obj:fullBloc()
+	local loc = self.loc
+	return {
+		x1=loc.x,
+		y1=loc.y,
+		x2=loc.x+loc.w*8*loc.sc,
+		y2=loc.y+loc.h*8*loc.sc
+	}
+end
+
+function Obj:calcBloc()
+	local loc = self.loc
 	return {
 		x1=loc.x+(loc.lf or 0)*loc.sc,
 		y1=loc.y+(loc.up or 0)*loc.sc,
@@ -20,7 +39,7 @@ function calcBloc(obj)
 	}
 end
 
-function _objDraw(self, active)
+function Obj:draw(active)
 	local loc = self.loc
 	if active then
 		withSwapAll(12, function()
@@ -43,14 +62,6 @@ function withFlashing(mainColor, swapWith, isFlashing, f)
 	else
 		f()
 	end
-end
-
-function makeObj(loc)
-	loc.zero = loc.zero or 0
-	local obj = {loc=loc,draw=_objDraw}
-	obj.calcBloc = calcBloc
-	obj.bloc = obj:calcBloc() -- useful for static objects
-	return obj
 end
 
 function withSwapAll(newi, f)

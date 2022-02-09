@@ -9,7 +9,7 @@ function drawMeter(icon,x,y,val)
 end
 
 function initBaby()
-	local baby = makeObj({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
+	local baby = Obj:new({x=100,y=116,w=2,h=2,ospr=336,spr=336,sc=1,rt=12,lf=4})
 	baby.props = {full=100, love=100}
 	baby.poops = 0
 	baby.poopedAt = 0

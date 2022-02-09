@@ -1,5 +1,5 @@
 function initTbl()
-	local tbl = makeObj({x=50,y=116,w=4,h=4,spr=412,sc=1,bt=18})
+	local tbl = Obj:new({x=50,y=116,w=4,h=4,spr=412,sc=1,bt=18})
 	tbl.holding = nil
 
 	tbl._draw = tbl.draw -- original draw fn
