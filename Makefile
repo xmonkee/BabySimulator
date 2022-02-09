@@ -6,6 +6,7 @@ tic: build/${NAME}.tic
 web: build/${NAME}.zip
 win: build/${NAME}.exe
 mac: build/${NAME}.app
+pages: pages/index.html
 
 build/${NAME}.lua: *.lua
 	mkdir -p build
@@ -23,6 +24,10 @@ build/${NAME}.exe: build/${NAME}.lua
 
 build/${NAME}.app: build/${NAME}.lua
 	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & export mac ${NAME}.app --alone=${alone}"
+
+pages/index.html: web
+	mkdir -p pages
+	unzip build/${NAME}.zip -d pages/
 
 clean:
 	rm -r build/
