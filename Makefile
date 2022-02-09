@@ -1,12 +1,12 @@
 NAME="BabySimulator"
 alone?=0
-all: tic web win mac
+all: pages
 
 tic: build/${NAME}.tic
 web: build/${NAME}.zip
 win: build/${NAME}.exe
 mac: build/${NAME}.app
-pages: pages/index.html
+pages: docs/index.html
 
 build/${NAME}.lua: *.lua
 	mkdir -p build
@@ -16,18 +16,18 @@ build/${NAME}.tic: build/${NAME}.lua
 	rm -f ./build/${NAME}.tic
 	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & save ${NAME}.tic"
 
-build/${NAME}.zip: build/${NAME}.lua
-	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & export html ${NAME}.zip --alone=${alone}"
+build/${NAME}.zip: build/${NAME}.tic
+	tic80 --cli --fs ./build --cmd="load ${NAME}.tic & export html ${NAME}.zip --alone=${alone}"
 
-build/${NAME}.exe: build/${NAME}.lua
-	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & export win ${NAME}.exe --alone=${alone}"
+build/${NAME}.exe: build/${NAME}.tic
+	tic80 --cli --fs ./build --cmd="load ${NAME}.tic & export win ${NAME}.exe --alone=${alone}"
 
-build/${NAME}.app: build/${NAME}.lua
-	tic80 --cli --fs ./build --cmd="load ${NAME}.lua & export mac ${NAME}.app --alone=${alone}"
+build/${NAME}.app: build/${NAME}.tic
+	tic80 --cli --fs ./build --cmd="load ${NAME}.tic & export mac ${NAME}.app --alone=${alone}"
 
-pages/index.html: web
-	mkdir -p pages
-	unzip build/${NAME}.zip -d pages/
+docs/index.html: web
+	mkdir -p docs
+	unzip build/${NAME}.zip -d docs/
 
 clean:
 	rm -r build/
